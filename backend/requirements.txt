@@ -1,0 +1,7 @@
+Django>=4.0,<5.0
+djangorestframework  # If using Django REST Framework
+celery[redis]  # Installs Celery with Redis support
+redis  # Redis client for Django & Celery
+django-environ  # For environment variable management
+gunicorn  # For production WSGI server (optional)
+psycopg2-binary  # PostgreSQL adapter (if using PostgreSQL)
