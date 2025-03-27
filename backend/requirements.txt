@@ -5,3 +5,5 @@ redis  # Redis client for Django & Celery
 django-environ  # For environment variable management
 gunicorn  # For production WSGI server (optional)
 psycopg2-binary  # PostgreSQL adapter (if using PostgreSQL)
+psycopg2
+python-dotenv

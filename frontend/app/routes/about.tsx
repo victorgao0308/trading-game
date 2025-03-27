@@ -14,54 +14,94 @@ interface DataPoint {
   value: number;
 }
 
+const DATARATE = 1000;
+
+const FAKEDATA = [
+  {
+    time: 1,
+    value: 5,
+  },
+  {
+    time: 2,
+    value: 10,
+  },
+  {
+    time: 3,
+    value: 10,
+  },
+  {
+    time: 4,
+    value: 20,
+  },
+  {
+    time: 5,
+    value: 15,
+  },
+];
+
 const RealTimeLineGraph = () => {
-  const [data, setData] = useState<DataPoint[]>([
-    {
-      time: 1,
-      value: 5,
-    },
-    {
-      time: 2,
-      value: 10,
-    },
-    {
-      time: 3,
-      value: 10,
-    },
-  ]);
+  const [data, setData] = useState<DataPoint[]>(FAKEDATA);
+
+  // state to control if data is being generated
+  const [isGeneratingData, setIsGeneratingData] = useState<boolean>(false);
+
+  const toggleDataGeneration = () => {
+    setIsGeneratingData((prev) => !prev);
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setData((prevData) => {
-        const newPoint: DataPoint = {
-          time: prevData.length + 1,
-          value: Math.random() * 100,
-        };
-        return [...prevData, newPoint];
-      });
-    }, 2500);
+    let interval: NodeJS.Timeout | undefined;
 
-    return () => clearInterval(interval);
-  }, []);
+    // generate data
+    if (isGeneratingData) {
+      interval = setInterval(() => {
+        setData((prevData) => {
+          const newPoint: DataPoint = {
+            time: prevData.length + 1,
+            value: Math.random() * 100,
+          };
+          return [...prevData, newPoint];
+        });
+      }, DATARATE);
+    } else {
+      clearInterval(interval);
+    }
+
+    // Cleanup interval when effect is removed or toggled off
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isGeneratingData]);
 
   return (
-    <div style={{ width: "60%", height: 400 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" type="number" domain={["dataMin", "dataMax"]} />
-          <YAxis domain={[0, 100]} />
-          {/* <Tooltip /> */}
-          <Line
-            type="linear"
-            dataKey="value"
-            stroke="#000000"
-            dot={true}
-            isAnimationActive={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <>
+      <h1>Current Price: </h1>
+      <button onClick={toggleDataGeneration}>
+        {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
+      </button>
+      <div style={{ width: "60%", height: 400 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="time"
+              type="number"
+              domain={["dataMin", "dataMax"]}
+            />
+            <YAxis domain={[0, 100]} />
+
+            {isGeneratingData ? <></> : <Tooltip />}
+            <Line
+              type="linear"
+              dataKey="value"
+              stroke="#000000"
+              dot={true}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </>
   );
 };
 
