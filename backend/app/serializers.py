@@ -1,12 +1,10 @@
 from rest_framework import serializers
-from .models import baseGame
+from .models import BaseGame
 
 class GameInstanceSerializer(serializers.ModelSerializer):
     class Meta:
-        model = baseGame
+        model = BaseGame
         fields = '__all__'
 
     def create(self, data):
-        num_players = data.get("num_players", 1)
-
-        return baseGame.objects.create(**data)
+        return BaseGame.objects.create(**data)
