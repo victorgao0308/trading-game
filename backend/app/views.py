@@ -1,14 +1,17 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .serializers import GameInstanceSerializer
-from .models import BaseGame
+from .serializers import BaseGameSerializer
+from .models import BaseGame, GameManager
+
 
 @api_view(['POST'])
 def create_base_game(request):
-    serializer = GameInstanceSerializer(data=request.data)
+    serializer = BaseGameSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
+        serializer.request_queue = []  
+        serializer.save() 
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -18,6 +21,50 @@ def delete_base_game(request, game_id):
     try:
         game_instance = BaseGame.objects.get(id=game_id)  
         game_instance.delete()
-        return Response({"message": f"Game with id {game_id} deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({
+            "message": f"Game with id {game_id} deleted successfully",
+            "game_id" : game_id,
+            }, status=status.HTTP_204_NO_CONTENT)
+    
     except BaseGame.DoesNotExist:
-        return Response({"error": f"Game with id {game_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            "error": f"Game with id {game_id} not found",
+            "game_id" : game_id,
+            }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def get_game_manager(request):
+    manager = GameManager()
+
+    serialized_games = {}
+    for game_id, game in manager.games.items():
+        serialized_games[game_id] = BaseGameSerializer(game).data
+
+    return Response({
+        "success": "game manager returned",
+        "game_manager": serialized_games
+        }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def register_base_game(request, game_id):
+    manager = GameManager()
+    ret = manager.register_game(game_id)
+    if (ret == -1):
+        return Response({
+            "error": f"game with id {game_id} already registered",
+            "game_id" : game_id
+            },status=status.HTTP_400_BAD_REQUEST)
+    
+
+    if (ret == -2):
+        return Response({
+            "error": f"game with id {game_id} does not exist",
+            "game_id" : game_id
+            },status=status.HTTP_400_BAD_REQUEST)
+    
+    if (ret == 0):
+        return Response({
+            "success": f"game with id {game_id} registered successfully",
+            "game_id" : game_id
+            },status=status.HTTP_200_OK)

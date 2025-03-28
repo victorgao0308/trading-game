@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 
 
 '''
@@ -9,7 +10,6 @@ to keep track of the games that are currently running
 '''
 class GameManager():
     _instance = None
-
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls, *args, **kwargs)
@@ -18,13 +18,14 @@ class GameManager():
 
     def register_game(self, game_id):
         if game_id in self.games:
-            return f"ERORR: game with id {game_id} already registered"
+            return -1
         else:
-            game = BaseGame.objects.get(id=game_id)
-            if game == None:
-                return f"ERORR: game with id {game_id} not found"
-            self.games[game_id] = BaseGame.objects.get(id=game_id)
-            return f"SUCCESS: game with id {game_id} successfully registered"
+            try:
+                game = BaseGame.objects.get(id=game_id)
+                self.games[game_id] = game
+                return 0
+            except ObjectDoesNotExist:
+                return -2
         
     def get_game(self, game_id):
         if game_id not in self.games:
@@ -33,13 +34,18 @@ class GameManager():
     
 
     def update_game_state(self, game_id):
-        game = BaseGame.objects.get(id=game_id)
-
-        if game == None:
+        try:
+            game = BaseGame.objects.get(id=game_id)
+            
+        except ObjectDoesNotExist:
             return f"ERORR: game with id {game_id} does not exist"
         
         self.games[game_id] = game  
         return f"SUCCESS: game with id {game_id} updated"
+    
+
+    def __str__(self):
+        return f""
 
 '''
 BaseGame
