@@ -15,12 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import create_game
+from .views import create_game, delete_game
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('create-game/', create_game, name='create-game'),
-
+    path('create-game/', create_game, name='create_game'),
+    path('delete-game/<int:game_id>/', delete_game, name='delete_game')
 ]
 
