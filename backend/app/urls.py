@@ -23,6 +23,6 @@ urlpatterns = [
     path('create-base-game/', create_base_game, name='create-base-game'),
     path('delete-base-game/<int:game_id>/', delete_base_game, name='delete-base-game'),
     path('get-game-manager/', get_game_manager, name='get-game-manager'),
-    path('register-base-game/<int:game_id>/', register_base_game, name='register-base-game')
+    path('register-base-game/<str:game_id>/', register_base_game, name='register-base-game')
 ]
 

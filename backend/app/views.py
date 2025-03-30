@@ -1,19 +1,27 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .serializers import BaseGameSerializer
 from .models import BaseGame, GameManager
 
 
 @api_view(['POST'])
 def create_base_game(request):
-    serializer = BaseGameSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.request_queue = []  
-        serializer.save() 
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    num_players = request.data.get('num_players')
+
+    base_game = BaseGame()
+
+
+    if num_players is not None:
+        base_game.num_players = num_players
+
+    base_game.save()
+
+    
+    return Response({
+        "success": "base_game created",
+        "base_game": base_game.to_dict()                    
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['DELETE'])
@@ -37,13 +45,16 @@ def get_game_manager(request):
     manager = GameManager()
 
     serialized_games = {}
+
     for game_id, game in manager.games.items():
-        serialized_games[game_id] = BaseGameSerializer(game).data
+        serialized_games[game_id] = game.to_dict()
 
     return Response({
         "success": "game manager returned",
         "game_manager": serialized_games
-        }, status=status.HTTP_200_OK)
+    }, status=status.HTTP_200_OK)
+
+
 
 
 @api_view(['POST'])
