@@ -2,15 +2,16 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import BaseGame, GameManager
+import threading
+import time
 
+
+from .engine.prices import getNextPrice
 
 @api_view(['POST'])
 def create_base_game(request):
-
     num_players = request.data.get('num_players')
-
     base_game = BaseGame()
-
 
     if num_players is not None:
         base_game.num_players = num_players
@@ -40,6 +41,7 @@ def delete_base_game(request, game_id):
             "game_id" : game_id,
             }, status=status.HTTP_404_NOT_FOUND)
 
+
 @api_view(['GET'])
 def get_game_manager(request):
     manager = GameManager()
@@ -53,8 +55,6 @@ def get_game_manager(request):
         "success": "game manager returned",
         "game_manager": serialized_games
     }, status=status.HTTP_200_OK)
-
-
 
 
 @api_view(['POST'])
@@ -79,3 +79,25 @@ def register_base_game(request, game_id):
             "success": f"game with id {game_id} registered successfully",
             "game_id" : game_id
             },status=status.HTTP_200_OK)
+    
+
+@api_view(['GET'])
+def get_next_base_game_price(request, game_id):
+
+    price = getNextPrice(game_id)
+
+    if price == -1:
+         return Response({
+            "error": f"game with id {game_id} not registered yet"            
+            },status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    return Response({
+            "success": f"game with id {game_id} price updated successfully",
+            "price": price
+            
+            },status=status.HTTP_200_OK)
+
+
+    

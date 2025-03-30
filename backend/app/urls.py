@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import create_base_game, delete_base_game, get_game_manager, register_base_game
+from .views import create_base_game, delete_base_game, get_game_manager, register_base_game, get_next_base_game_price
 
 
 urlpatterns = [
@@ -23,6 +23,7 @@ urlpatterns = [
     path('create-base-game/', create_base_game, name='create-base-game'),
     path('delete-base-game/<int:game_id>/', delete_base_game, name='delete-base-game'),
     path('get-game-manager/', get_game_manager, name='get-game-manager'),
-    path('register-base-game/<str:game_id>/', register_base_game, name='register-base-game')
+    path('register-base-game/<str:game_id>/', register_base_game, name='register-base-game'),
+    path('get-next-base-game-price/<str:game_id>/', get_next_base_game_price, name='get-next-base-game-price')
 ]
 

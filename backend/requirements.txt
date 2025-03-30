@@ -7,3 +7,4 @@ gunicorn  # For production WSGI server (optional)
 psycopg2-binary  # PostgreSQL adapter (if using PostgreSQL)
 psycopg2
 python-dotenv
+django-cors-headers

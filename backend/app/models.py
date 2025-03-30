@@ -5,6 +5,7 @@ import uuid
 
 
 
+
 '''
 GameManager
 
@@ -39,7 +40,7 @@ class GameManager():
         
     def get_game(self, game_id):
         if game_id not in self.games:
-            return f"ERORR: game with id {game_id} not registered yet"
+            return None
         return self.games[game_id]
     
 
@@ -68,7 +69,7 @@ class BaseGame(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request_queue = []
-
+        self.cur_price = 0
 
     def to_dict(self):
         return {
@@ -77,9 +78,9 @@ class BaseGame(models.Model):
             "created_at": self.created_at,
             "num_players": self.num_players,
             "request_queue": self.request_queue,
+            "cur_price": self.cur_price
         }
 
-    
 
 '''
 Stock
@@ -98,7 +99,6 @@ class Stock(models.Model):
 
 '''
 Player
-
 
 '''
 class Player(models.Model):
