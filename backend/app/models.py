@@ -2,6 +2,8 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import uuid
+from django.contrib.postgres.fields import ArrayField
+
 
 '''
 GameManager
@@ -60,6 +62,9 @@ Stock
 
 Base stock class. Keeps track of stock name, company name, and a short description of the company. Includes
 current stock price, and current buy and sell orders, if applicable.
+
+Industries field contains a list of industries and sectors relevant to the current stock. This is used to
+generate random events in the game.
 '''
 class Stock(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -67,8 +72,9 @@ class Stock(models.Model):
     company_name = models.CharField(max_length=256, default="Company XYZ")
     description = models.TextField(default="Default stock description")
     current_price = models.DecimalField(default=0, decimal_places=2, max_digits=20)
-    buy_orders = models.JSONField()
-    sell_orders = models.JSONField()
+    industries = ArrayField(models.CharField(max_length=256), blank=True, default=list)
+    buy_orders = models.JSONField(default=dict)
+    sell_orders = models.JSONField(default=dict)
 
 
     def to_dict(self):
@@ -78,6 +84,7 @@ class Stock(models.Model):
             "company_name": self.company_name,
             "description": self.description,
             "current_price": self.current_price,
+            "industries": self.industries,
             "buy_orders": self.buy_orders,
             "sell_orders": self.sell_orders
         }
@@ -105,7 +112,8 @@ class BaseGame(models.Model):
             "created_at": self.created_at,
             "num_players": self.num_players,
             "request_queue": self.request_queue,
-            "cur_price": self.cur_price
+            "cur_price": self.cur_price,
+            "stock": self.stock.to_dict()
         }
 
 

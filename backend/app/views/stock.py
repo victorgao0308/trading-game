@@ -1,22 +1,31 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from ..models import Stock, GameManager
+from ..models import Stock
+import random
+import json
 
 
-@api_view(['POST'])
-def create_stock(request):
-    seed = request.data.get('seed')
-
+def create_stock(seed):
     stock = Stock()
 
-    if seed is not None:
-        stock.seed = seed
+    if seed != "":
+        random.seed(seed)
 
-    return Response({
-        "success": "base_game created",
-        "base_game": stock.to_dict()                    
-    }, status=status.HTTP_200_OK)
+    with open("app/data/stocks.json", "r") as file:
+        data = json.load(file)
+
+    data = random.choice(data)
+
+    stock.stock_name = data["stock_name"]
+    stock.company_name = data["company_name"]
+    stock.description = data["description"]
+    stock.industries = data["industries"]
+    
+
+    stock.save()
+
+    return stock
 
 
     

@@ -6,10 +6,21 @@ from ..models import BaseGame, GameManager
 
 from ..engine.prices import getNextPriceSolo
 
+from .stock import create_stock
+
 @api_view(['POST'])
 def create_base_game(request):
     num_players = request.data.get('num_players')
+    seed = request.data.get('seed')
+
+    if seed is None:
+        seed = ""
+
+    stock = create_stock(seed)
+    
     base_game = BaseGame()
+
+    base_game.stock = stock
 
     if num_players is not None:
         base_game.num_players = num_players
