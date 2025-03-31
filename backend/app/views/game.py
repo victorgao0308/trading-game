@@ -1,10 +1,10 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import BaseGame, GameManager
+from ..models import BaseGame, GameManager
 
 
-from .engine.prices import getNextPriceSolo
+from ..engine.prices import getNextPriceSolo
 
 @api_view(['POST'])
 def create_base_game(request):
@@ -88,7 +88,6 @@ def get_next_base_game_price_solo(request, game_id):
          return Response({
             "error": f"game with id {game_id} not registered yet"            
             },status=status.HTTP_400_BAD_REQUEST)
-
 
 
     return Response({

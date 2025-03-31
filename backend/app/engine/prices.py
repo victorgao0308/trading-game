@@ -16,7 +16,7 @@ Gets next price in solo mode.
 
 In solo mode, there are no bots. The player can directly sell/buy at the listed price.
 Price is based on historical stock data, random events that occur in game, and based 
-on the player's purchasing patterns
+on the player's purchasing patterns.
 '''
 def getNextPriceSolo(game_id):
     manager = GameManager()
@@ -26,7 +26,7 @@ def getNextPriceSolo(game_id):
     if game == None:
         return -1
     
-    rand = random.uniform(-2.5, 3.5)
+    rand = round(random.uniform(-2.5, 2.5), 2)
 
     game.cur_price = max(0, game.cur_price + rand)
 

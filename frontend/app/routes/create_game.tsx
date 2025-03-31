@@ -33,7 +33,6 @@ const GameModeSelector = () => {
     <div className="flex justify-center items-center h-screen">
       <Paper className="p-6 w-2/5 shadow-lg bg-white rounded-lg text-center flex flex-col items-center">
         <h2 className="text-xl font-bold mb-4">Create New Game</h2>
-
         <Divider className="w-full font-bold" variant="fullWidth">
           Game Mode
         </Divider>
@@ -65,47 +64,66 @@ const GameModeSelector = () => {
         >
           {descriptions[selectedIndex]}
         </motion.div>
-
         <Divider className="w-full font-bold" variant="fullWidth">
           Game Settings
         </Divider>
 
+        {selectedIndex != 0 ? (
+          <>
+            <div className="flex justify-between items-center w-full">
+              <span>
+                Number of Bots{" "}
+                <Tooltip
+                  title="Number of bots to play against. Bots act like players and can execute trades. Enter an integer 1 - 100."
+                  className="mb-0.5"
+                >
+                  <InfoOutline fontSize="small" />
+                </Tooltip>
+              </span>
+
+              <TextField
+                id="num-bots"
+                variant="outlined"
+                size="small"
+                className="w-20"
+                value={1}
+              />
+            </div>
+            <div className="flex justify-between items-center w-full">
+              <span>
+                Number of Market Makers{" "}
+                <Tooltip
+                  title="Number of bots to designate as market makers. Market makers provide liquidity by creating bid/ask spreads. Number must be less than or equal to the number of bots. (It is recommended to have 10% of your bots be market makers). Enter an integer 1 - Number of Bots."
+                  className="mb-0.5"
+                >
+                  <InfoOutline fontSize="small" />
+                </Tooltip>
+              </span>
+
+              <TextField
+                id="num-mms"
+                variant="outlined"
+                size="small"
+                className="w-20"
+                value={1}
+              />
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
+
         <div className="flex justify-between items-center w-full">
           <span>
-            Number of Bots{" "}
-            <Tooltip title="Number of bots to play against." className="mb-0.5">
-              <InfoOutline fontSize="small"/>
+            Number of Trading Days
+            <Tooltip
+              title="Number of trading days in the game. The game ends after the specified number of trading days. Enter an integer 1 - 30."
+              className="mb-0.5"
+            >
+              <InfoOutline fontSize="small" />
             </Tooltip>
           </span>
 
-          <TextField
-            id="num-bots"
-            variant="outlined"
-            size="small"
-            className="w-20"
-            value={1}
-          />
-        </div>
-
-        <div className="flex justify-between items-center w-full">
-          <span>
-            Number of Market Makers{" "}
-            <Tooltip title="Number of bots to play against." className="mb-0.5">
-              <InfoOutline fontSize="small"/>
-            </Tooltip>
-          </span>
-
-          <TextField
-            id="num-mms"
-            variant="outlined"
-            size="small"
-            className="w-20"
-            value={1}
-          />
-        </div>
-
-        <div className="flex justify-between items-center w-full">
-          <span>Number of Trading Days</span>
           <TextField
             id="num-trading-days"
             variant="outlined"
@@ -114,9 +132,16 @@ const GameModeSelector = () => {
             value={10}
           />
         </div>
-
         <div className="flex justify-between items-center w-full">
-          <span>Number of Ticks per Day</span>
+          <span>
+            Number of Ticks per Day
+            <Tooltip
+              title="Number ticks per trading day. A tick is an update in stock price. Enter an intgeger 1 - 120."
+              className="mb-0.5"
+            >
+              <InfoOutline fontSize="small" />
+            </Tooltip>
+          </span>
           <TextField
             id="num-ticks"
             variant="outlined"
@@ -125,9 +150,16 @@ const GameModeSelector = () => {
             value={1}
           />
         </div>
-
         <div className="flex justify-between items-center w-full">
-          <span>Time Between Ticks (seconds)</span>
+          <span>
+            Time Between Ticks (seconds)
+            <Tooltip
+              title="Time (in seconds) between each stock tick. Enter a number 0.1 - 5."
+              className="mb-0.5"
+            >
+              <InfoOutline fontSize="small" />
+            </Tooltip>
+          </span>
           <TextField
             id="time-between-ticks"
             variant="outlined"
@@ -136,9 +168,34 @@ const GameModeSelector = () => {
             value={1}
           />
         </div>
-
         <div className="flex justify-between items-center w-full">
-          <span>Volatility</span>
+          <span>
+            Starting Cash
+            <Tooltip
+              title="How much cash you (and bots if applicable) start with. Enter a number 1000 - 1000000."
+              className="mb-0.5"
+            >
+              <InfoOutline fontSize="small" />
+            </Tooltip>
+          </span>
+          <TextField
+            id="starting-cash"
+            variant="outlined"
+            size="small"
+            className="w-20"
+            value={1}
+          />
+        </div>
+        <div className="flex justify-between items-center w-full">
+          <span>
+            Volatility
+            <Tooltip
+              title="Controls how volatile the stock is. A higher value means the stock is more likely to experience larger price swings. Enter a number 1 - 100."
+              className="mb-0.5"
+            >
+              <InfoOutline fontSize="small" />
+            </Tooltip>
+          </span>
           <TextField
             id="volatility"
             variant="outlined"
@@ -147,9 +204,16 @@ const GameModeSelector = () => {
             value={1}
           />
         </div>
-
         <div className="flex justify-between items-center w-full">
-          <span>Seed</span>
+          <span>
+            Seed
+            <Tooltip
+              title="Seed that controls random events in game and actions performed by bots. Leave blank for random."
+              className="mb-0.5"
+            >
+              <InfoOutline fontSize="small" />
+            </Tooltip>
+          </span>
           <TextField
             id="seed"
             variant="outlined"

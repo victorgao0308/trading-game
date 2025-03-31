@@ -3,9 +3,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import uuid
 
-
-
-
 '''
 GameManager
 
@@ -53,10 +50,38 @@ class GameManager():
         
         self.games[game_id] = game  
         return f"SUCCESS: game with id {game_id} updated"
-    
 
     def __str__(self):
         return f""
+    
+
+'''
+Stock
+
+Base stock class. Keeps track of stock name, company name, and a short description of the company. Includes
+current stock price, and current buy and sell orders, if applicable.
+'''
+class Stock(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    stock_name = models.CharField(max_length=256, default="Stock XYZ")
+    company_name = models.CharField(max_length=256, default="Company XYZ")
+    description = models.TextField(default="Default stock description")
+    current_price = models.DecimalField(default=0, decimal_places=2, max_digits=20)
+    buy_orders = models.JSONField()
+    sell_orders = models.JSONField()
+
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "stock_name": self.stock_name,
+            "company_name": self.company_name,
+            "description": self.description,
+            "current_price": self.current_price,
+            "buy_orders": self.buy_orders,
+            "sell_orders": self.sell_orders
+        }
+
 '''
 BaseGame
 Base game that includes one stock option
@@ -65,6 +90,8 @@ class BaseGame(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(default=timezone.now, editable=False)
     num_players = models.BigIntegerField(default=1)
+    seed = models.CharField(max_length=256, default="")
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="games")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,20 +109,6 @@ class BaseGame(models.Model):
         }
 
 
-'''
-Stock
-'''
-class Stock(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=256, default="Stock XYZ")
-    description = models.TextField(default="Default stock description")
-    currentPrice = models.FloatField(default=0)
-
-
-    buyOrders = models.JSONField()
-    sellOrders = models.JSONField()
-
-
 
 '''
 Player
@@ -108,5 +121,5 @@ class Player(models.Model):
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.IntegerField(choices=ROLE_CHOICES)
-    money = models.FloatField()
+    money = models.DecimalField(default=0, decimal_places=2, max_digits=20)
 

@@ -1,0 +1,267 @@
+[
+    {
+      "stock_name": "SOLARX",
+      "company_name": "Solara Innovations Inc.",
+      "description": "Designs and manufactures next-generation transparent solar panels integrated directly into building materials like windows and facades."
+    },
+    {
+      "stock_name": "AQUAFLO",
+      "company_name": "AquaFlow Dynamics",
+      "description": "Develops atmospheric water generation technology for residential and commercial use, providing clean drinking water from ambient air humidity."
+    },
+    {
+      "stock_name": "NEUROB",
+      "company_name": "NeuroBotics Corp.",
+      "description": "Specializes in AI-powered robotic exoskeletons designed for physical rehabilitation and enhancing mobility for individuals with disabilities."
+    },
+    {
+      "stock_name": "MYCOGR",
+      "company_name": "MycoGrow Sustainable Solutions",
+      "description": "Cultivates and processes mycelium (mushroom root structures) to create biodegradable packaging materials and plant-based meat alternatives."
+    },
+    {
+      "stock_name": "SKYTRAN",
+      "company_name": "SkyTransit Logistics",
+      "description": "Operates a network of autonomous delivery drones for rapid, last-mile package delivery in urban and suburban areas."
+    },
+    {
+      "stock_name": "GENPRT",
+      "company_name": "GenePrint Diagnostics",
+      "description": "Provides personalized genetic testing services that offer insights into health predispositions, ancestry, and optimized wellness plans."
+    },
+    {
+      "stock_name": "VRWORX",
+      "company_name": "VirtuWorlds Experiences",
+      "description": "Creates immersive virtual reality platforms for collaborative remote work, education, and large-scale social events."
+    },
+    {
+      "stock_name": "CRBNCP",
+      "company_name": "CarbonCapture Technologies",
+      "description": "Develops and deploys industrial-scale direct air capture (DAC) systems to remove carbon dioxide from the atmosphere."
+    },
+    {
+      "stock_name": "FOODPRNT",
+      "company_name": "FoodPrint Vertical Farms",
+      "description": "Builds and operates automated indoor vertical farms using hydroponics and AI to grow produce locally with minimal water and land usage."
+    },
+    {
+      "stock_name": "SONDWV",
+      "company_name": "SoundWave Energy",
+      "description": "Researches and develops technology to harness ambient sound vibrations and convert them into usable electrical energy for low-power devices."
+    },
+    {
+      "stock_name": "BIOFAB",
+      "company_name": "BioFabrics Unlimited",
+      "description": "Engineers high-performance textiles using bio-based polymers derived from engineered microbes, reducing reliance on petroleum."
+    },
+    {
+      "stock_name": "HOLGRM",
+      "company_name": "HoloGram Communications",
+      "description": "Develops advanced holographic projection technology for telepresence, entertainment, and advertising displays."
+    },
+    {
+      "stock_name": "FUSIONX",
+      "company_name": "FusionX Power Systems",
+      "description": "Conducts research and development into compact, modular fusion reactors aiming for commercial clean energy production."
+    },
+    {
+      "stock_name": "QCOMPT",
+      "company_name": "QuantumCompute Solutions",
+      "description": "Offers cloud-based access to quantum computing resources for complex simulations, optimization problems, and cryptography research."
+    },
+    {
+      "stock_name": "ROBOAG",
+      "company_name": "RoboAg Precision Farming",
+      "description": "Manufactures autonomous robotic systems for planting, monitoring, and harvesting crops with high efficiency and reduced environmental impact."
+    },
+    {
+      "stock_name": "PLASTC",
+      "company_name": "Plasticycle Innovations",
+      "description": "Develops novel chemical recycling processes to break down mixed plastic waste into virgin-quality raw materials."
+    },
+    {
+      "stock_name": "MEDBOT",
+      "company_name": "MediBot Surgical Systems",
+      "description": "Creates micro-robotic tools for minimally invasive surgical procedures, enhancing precision and reducing patient recovery times."
+    },
+    {
+      "stock_name": "SPCWTHR",
+      "company_name": "SpaceWeather Analytics",
+      "description": "Provides advanced forecasting and real-time monitoring of solar activity and space weather events to protect satellites and infrastructure."
+    },
+    {
+      "stock_name": "GEOENG",
+      "company_name": "GeoEngineered Materials",
+      "description": "Develops self-healing concrete and other advanced construction materials inspired by natural geological processes."
+    },
+    {
+      "stock_name": "NANOVAC",
+      "company_name": "NanoVaccine Labs",
+      "description": "Designs and manufactures nanoparticle-based vaccine delivery systems for improved efficacy and targeted immune responses."
+    },
+    {
+      "stock_name": "DEEPOSEA",
+      "company_name": "DeepOcean Resources",
+      "description": "Engages in sustainable exploration and resource extraction from the deep seabed, focusing on rare earth elements and minerals."
+    },
+    {
+      "stock_name": "AIRTAXI",
+      "company_name": "AeroMobil Urban Transit",
+      "description": "Building a fleet of electric vertical takeoff and landing (eVTOL) aircraft for on-demand urban air mobility services."
+    },
+    {
+      "stock_name": "SMARTGRD",
+      "company_name": "SmartGrid Dynamics",
+      "description": "Develops AI-driven software solutions for optimizing energy distribution, managing demand response, and integrating renewables into the power grid."
+    },
+    {
+        "stock_name": "CYBRSEC",
+        "company_name": "CyberSecure Solutions Group",
+        "description": "Provides cutting-edge AI-driven cybersecurity platforms for enterprise-level threat detection and automated response."
+      },
+      {
+        "stock_name": "AETHER",
+        "company_name": "Aether Communications Corp.",
+        "description": "Developing next-generation satellite constellations for global, high-speed, low-latency internet access."
+      },
+      {
+        "stock_name": "HYDROPURE",
+        "company_name": "HydroPure Water Technologies",
+        "description": "Manufactures advanced membrane filtration systems for industrial wastewater treatment and desalination."
+      },
+      {
+        "stock_name": "QUANTUMX",
+        "company_name": "QuantumX Simulations",
+        "description": "Focuses on developing quantum algorithms and software for materials science discovery and drug development."
+      },
+      {
+        "stock_name": "BIOHEAL",
+        "company_name": "BioHeal Regenerative Medicine",
+        "description": "Researches and develops tissue engineering therapies and stem cell treatments for degenerative diseases."
+      },
+      {
+        "stock_name": "AGROBOT",
+        "company_name": "AgroBotics Innovations",
+        "description": "Designs and deploys fleets of autonomous robots for precision agriculture tasks like soil analysis, planting, and pest control."
+      },
+      {
+        "stock_name": "LUMINA",
+        "company_name": "Lumina Photonics Inc.",
+        "description": "Specializes in the design and production of high-efficiency laser systems and optical components for manufacturing and telecommunications."
+      },
+      {
+        "stock_name": "ENERSTOR",
+        "company_name": "EnerStore Grid Solutions",
+        "description": "Develops large-scale, long-duration energy storage systems using novel battery chemistries for utility grid stabilization."
+      },
+      {
+        "stock_name": "SYNTHBIO",
+        "company_name": "SynthBio Creations",
+        "description": "Utilizes synthetic biology to produce high-value compounds, including sustainable flavors, fragrances, and specialty chemicals."
+      },
+      {
+        "stock_name": "NEURALINK",
+        "company_name": "Neuralink Dynamics",
+        "description": "Developing advanced brain-computer interfaces (BCIs) for medical applications and human augmentation."
+      },
+      {
+        "stock_name": "ECOPACK",
+        "company_name": "EcoPack Sustainable Packaging",
+        "description": "Manufactures biodegradable and compostable packaging solutions derived from plant-based materials and agricultural waste."
+      },
+      {
+        "stock_name": "SKYHAWK",
+        "company_name": "SkyHawk Aerial Imaging",
+        "description": "Provides high-resolution aerial surveying and mapping services using drones equipped with advanced sensor technology."
+      },
+      {
+        "stock_name": "GEOPOWER",
+        "company_name": "GeoPower Energy Resources",
+        "description": "Explores and develops enhanced geothermal systems (EGS) for clean, baseload power generation."
+      },
+      {
+        "stock_name": "VIRTUCARE",
+        "company_name": "VirtuCare Telehealth Systems",
+        "description": "Offers a comprehensive telehealth platform connecting patients with healthcare providers via secure video consultations and remote monitoring."
+      },
+      {
+        "stock_name": "MATERION",
+        "company_name": "Materion Advanced Materials",
+        "description": "Develops and synthesizes novel alloys, ceramics, and composites with unique properties for aerospace and defense applications."
+      },
+      {
+        "stock_name": "ROBOCHEF",
+        "company_name": "RoboChef Culinary Automation",
+        "description": "Designs robotic kitchen systems capable of preparing a wide variety of meals for restaurants and institutional food service."
+      },
+      {
+        "stock_name": "TRANSLATEAI",
+        "company_name": "TranslateAI Global Communications",
+        "description": "Provides real-time, AI-powered language translation services across multiple platforms, including voice and text."
+      },
+      {
+        "stock_name": "AQUAFARM",
+        "company_name": "AquaFarm Sustainable Aquaculture",
+        "description": "Operates land-based, closed-loop aquaculture systems for raising fish sustainably with minimal environmental impact."
+      },
+      {
+        "stock_name": "SOLARSAIL",
+        "company_name": "SolarSail Propulsion Labs",
+        "description": "Researching and developing solar sail technology for efficient, long-duration space missions and satellite maneuvering."
+      },
+      {
+        "stock_name": "MINDSCAPE",
+        "company_name": "MindScape VR Entertainment",
+        "description": "Creates hyper-realistic, narrative-driven virtual reality experiences and games."
+      },
+      {
+        "stock_name": "CARBONLOOP",
+        "company_name": "CarbonLoop Industries",
+        "description": "Develops technology to capture industrial carbon emissions and convert them into valuable products like building materials or fuels."
+      },
+      {
+        "stock_name": "LOGISTIX",
+        "company_name": "Logistix AI Solutions",
+        "description": "Provides AI-powered software for optimizing supply chain management, warehouse automation, and transportation logistics."
+      },
+      {
+        "stock_name": "MEDISENSE",
+        "company_name": "MediSense Wearable Diagnostics",
+        "description": "Designs non-invasive wearable sensors for continuous monitoring of vital signs and early disease detection."
+      },
+      {
+        "stock_name": "HELIOSTAT",
+        "company_name": "Heliostat Power Generation",
+        "description": "Builds and operates concentrated solar power (CSP) plants using fields of mirrors (heliostats) to focus sunlight."
+      },
+      {
+        "stock_name": "PRINTFAB",
+        "company_name": "PrintFab 3D Manufacturing",
+        "description": "Offers on-demand additive manufacturing (3D printing) services using a variety of materials for rapid prototyping and custom parts production."
+      },
+      {
+        "stock_name": "MYCOROOT",
+        "company_name": "MycoRoot BioRemediation",
+        "description": "Utilizes specialized fungi (mycoremediation) to break down pollutants and contaminants in soil and water."
+      },
+      {
+        "stock_name": "SOUNDSCAPE",
+        "company_name": "SoundScape Audio Technologies",
+        "description": "Develops immersive 3D audio software and hardware for gaming, virtual reality, and professional audio production."
+      },
+      {
+        "stock_name": "URBANPOD",
+        "company_name": "UrbanPod Mobility Systems",
+        "description": "Designing autonomous, electric, pod-based transportation systems for dense urban environments."
+      },
+      {
+        "stock_name": "GENEDIT",
+        "company_name": "GeneEdit Therapeutics",
+        "description": "Focuses on developing CRISPR-based gene editing therapies to treat genetic disorders at their source."
+      },
+      {
+        "stock_name": "FIBEROPTX",
+        "company_name": "FiberOptX Networks",
+        "description": "Installs and maintains ultra-high-speed fiber optic networks for residential and business customers."
+      }
+  ]
