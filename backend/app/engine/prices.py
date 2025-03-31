@@ -11,7 +11,14 @@ import random
 from ..models import GameManager
 
 
-def getNextPrice(game_id):
+'''
+Gets next price in solo mode.
+
+In solo mode, there are no bots. The player can directly sell/buy at the listed price.
+Price is based on historical stock data, random events that occur in game, and based 
+on the player's purchasing patterns
+'''
+def getNextPriceSolo(game_id):
     manager = GameManager()
 
     game = manager.get_game(game_id)

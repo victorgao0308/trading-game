@@ -2,11 +2,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import BaseGame, GameManager
-import threading
-import time
 
 
-from .engine.prices import getNextPrice
+from .engine.prices import getNextPriceSolo
 
 @api_view(['POST'])
 def create_base_game(request):
@@ -82,9 +80,9 @@ def register_base_game(request, game_id):
     
 
 @api_view(['GET'])
-def get_next_base_game_price(request, game_id):
+def get_next_base_game_price_solo(request, game_id):
 
-    price = getNextPrice(game_id)
+    price = getNextPriceSolo(game_id)
 
     if price == -1:
          return Response({

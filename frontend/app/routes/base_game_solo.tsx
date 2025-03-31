@@ -21,7 +21,7 @@ import {
   
   const FAKEDATA: DataPoint[] = [];
   
-  const base_game = () => {
+  const base_game_solo = () => {
     /* ---------------------USESTATES------------------------ */
   
     // array to hold price of stock
@@ -62,7 +62,7 @@ import {
     const getNextDataPoint = async () => {
       try {
         const response = await axios.get(
-          `${web_url}/get-next-base-game-price/${gameId}/`
+          `${web_url}/get-next-base-game-price-solo/${gameId}/`
         );
         return(response.data.price);
       } catch (error) {
@@ -114,7 +114,7 @@ import {
   
         <button onClick={createNewBaseGame}>create new base game</button>
   
-        <div style={{ width: "60%", height: 400 }}>
+        <div style={{ width: "65%", height: 400 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -140,5 +140,4 @@ import {
     );
   };
   
-  export default base_game;
-  
+export default base_game_solo;
