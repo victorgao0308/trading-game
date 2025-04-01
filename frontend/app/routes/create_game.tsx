@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Paper } from "@mui/material";
 import { ArrowBack, ArrowForward, InfoOutline } from "@mui/icons-material";
 import { Divider, TextField, Tooltip } from "@mui/material";
@@ -13,10 +13,25 @@ const descriptions = [
 
 const GameModeSelector = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // tracks whether or not the user has moved the selection for the game mode
+  // this prevents the "fade in" animation upon page load
+  const [hasMovedSelection, setHasMovedSelection] = useState(false);
+
   const [direction, setDirection] = useState(0);
 
+  const [numBots, setNumBots] = useState("30");
+  const [numBotsError, setNumBotsError] = useState(false);
+  const [numBotsMessage, setNumBotsMessage] = useState("");
+
+  const [numMM, setNumMM] = useState("3");
+
+  const [tradingDays, setTradingDays] = useState("15");
+
+  // handlers for scrolling left/right on game type
   const handlePrevious = () => {
     setDirection(-1);
+    setHasMovedSelection(true);
     setSelectedIndex((prevIndex) =>
       prevIndex > 0 ? prevIndex - 1 : gameModes.length - 1
     );
@@ -24,14 +39,52 @@ const GameModeSelector = () => {
 
   const handleNext = () => {
     setDirection(1);
+    setHasMovedSelection(true);
     setSelectedIndex((prevIndex) =>
       prevIndex < gameModes.length - 1 ? prevIndex + 1 : 0
     );
   };
 
+  // handlers for updating text fields
+  const handleNumBots = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNumBots(e.target.value);
+  };
+
+  const handleTradingDays = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTradingDays(e.target.value);
+  };
+
+  const handleNumMM = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNumMM(e.target.value);
+  };
+
+  // validators for text fields
+  useEffect(() => {
+    validateNumBots();
+  }, [numBots]);
+
+  const validateNumBots = () => {
+    const val = parseInt(numBots);
+    console.log(val);
+    if (isNaN(val) || val < 1 || val > 100) {
+      setNumBotsError(true);
+      setNumBotsMessage("Enter an integer 1 - 100.");
+    } else {
+      setNumBotsError(false);
+      setNumBotsMessage("");
+    }
+  };
+
+
+
+
+  // validate all fields when submitting form
+  const validateInputs = () => {
+    validateNumBots();
+  }
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center my-12">
       <Paper className="p-6 w-2/5 shadow-lg bg-white rounded-lg text-center flex flex-col items-center">
         <h2 className="text-xl font-bold mb-4">Create New Game</h2>
         <Divider className="w-full font-bold" variant="fullWidth">
@@ -43,7 +96,7 @@ const GameModeSelector = () => {
           </Button>
           <motion.div
             key={selectedIndex}
-            initial={{ opacity: 0, x: direction * 10 }}
+            initial={{ opacity: hasMovedSelection ? 0 : 1, x: direction * 10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -direction * 10 }}
             transition={{ duration: 0.3 }}
@@ -57,7 +110,7 @@ const GameModeSelector = () => {
         </div>
         <motion.div
           key={selectedIndex}
-          initial={{ opacity: 0, x: direction * 10 }}
+          initial={{ opacity: hasMovedSelection ? 0 : 1, x: direction * 10 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -direction * 10 }}
           transition={{ duration: 0.3 }}
@@ -71,12 +124,12 @@ const GameModeSelector = () => {
 
         {selectedIndex != 0 ? (
           <>
-            <div className="flex justify-between items-center w-full">
+            <div className="flex justify-between items-center w-full mb-1">
               <span>
                 Number of Bots{" "}
                 <Tooltip
                   title="Number of bots to play against. Bots act like players and can execute trades. Enter an integer 1 - 100."
-                  className="mb-0.5"
+                  className="mb-0.5 ml-1"
                 >
                   <InfoOutline fontSize="small" />
                 </Tooltip>
@@ -85,17 +138,32 @@ const GameModeSelector = () => {
               <TextField
                 id="num-bots"
                 variant="outlined"
+                type="number"
                 size="small"
                 className="w-20"
-                value={1}
+                value={numBots}
+                onChange={handleNumBots}
+                error={numBotsError}
+                helperText={numBotsMessage}
+                sx={{
+                  "& .MuiFormHelperText-root": {
+                    fontSize: ".6rem",
+                    margin: "0",
+                    display: "block",
+                    whiteSpace: "normal",
+                    width: "12rem",
+                    marginLeft: "-7rem", 
+                    textAlign: "right",
+                  },
+                }}
               />
             </div>
-            <div className="flex justify-between items-center w-full">
+            <div className="flex justify-between items-center w-full mb-1">
               <span>
                 Number of Market Makers{" "}
                 <Tooltip
                   title="Number of bots to designate as market makers. Market makers provide liquidity by creating bid/ask spreads. Number must be less than or equal to the number of bots. (It is recommended to have 10% of your bots be market makers). Enter an integer 1 - Number of Bots."
-                  className="mb-0.5"
+                  className="mb-0.5 ml-1"
                 >
                   <InfoOutline fontSize="small" />
                 </Tooltip>
@@ -106,7 +174,9 @@ const GameModeSelector = () => {
                 variant="outlined"
                 size="small"
                 className="w-20"
-                value={1}
+                value={numMM}
+                onChange={handleNumMM}
+                type="number"
               />
             </div>
           </>
@@ -114,12 +184,12 @@ const GameModeSelector = () => {
           <></>
         )}
 
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between items-center w-full mb-1">
           <span>
             Number of Trading Days
             <Tooltip
               title="Number of trading days in the game. The game ends after the specified number of trading days. Enter an integer 1 - 30."
-              className="mb-0.5"
+              className="mb-0.5 ml-1"
             >
               <InfoOutline fontSize="small" />
             </Tooltip>
@@ -130,15 +200,18 @@ const GameModeSelector = () => {
             variant="outlined"
             size="small"
             className="w-20"
-            value={10}
+            value={tradingDays}
+            type="number"
+            onChange={handleTradingDays}
           />
         </div>
-        <div className="flex justify-between items-center w-full">
+
+        <div className="flex justify-between items-center w-full mb-1">
           <span>
             Number of Ticks per Day
             <Tooltip
-              title="Number ticks per trading day. A tick is an update in stock price. Enter an intgeger 1 - 120."
-              className="mb-0.5"
+              title="Number ticks per trading day. A tick is an update in stock price. Enter an integer 1 - 120."
+              className="mb-0.5 ml-1"
             >
               <InfoOutline fontSize="small" />
             </Tooltip>
@@ -151,12 +224,12 @@ const GameModeSelector = () => {
             value={1}
           />
         </div>
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between items-center w-full mb-1">
           <span>
             Time Between Ticks (seconds)
             <Tooltip
               title="Time (in seconds) between each stock tick. Enter a number 0.1 - 5."
-              className="mb-0.5"
+              className="mb-0.5 ml-1"
             >
               <InfoOutline fontSize="small" />
             </Tooltip>
@@ -169,12 +242,12 @@ const GameModeSelector = () => {
             value={1}
           />
         </div>
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between items-center w-full mb-1">
           <span>
             Starting Cash
             <Tooltip
               title="How much cash you (and bots if applicable) start with. Enter a number 1000 - 1000000."
-              className="mb-0.5"
+              className="mb-0.5 ml-1"
             >
               <InfoOutline fontSize="small" />
             </Tooltip>
@@ -187,12 +260,12 @@ const GameModeSelector = () => {
             value={1}
           />
         </div>
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between items-center w-full mb-1">
           <span>
             Volatility
             <Tooltip
               title="Controls how volatile the stock is. A higher value means the stock is more likely to experience larger price swings. Enter a number 1 - 100."
-              className="mb-0.5"
+              className="mb-0.5 ml-1"
             >
               <InfoOutline fontSize="small" />
             </Tooltip>
@@ -205,12 +278,12 @@ const GameModeSelector = () => {
             value={1}
           />
         </div>
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between items-center w-full mb-1">
           <span>
             Seed
             <Tooltip
               title="Seed that controls random events in game and actions performed by bots. Leave blank for random."
-              className="mb-0.5"
+              className="mb-0.5 ml-1"
             >
               <InfoOutline fontSize="small" />
             </Tooltip>
@@ -225,6 +298,7 @@ const GameModeSelector = () => {
         <Button
           variant="contained"
           className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={validateInputs}
         >
           Create
         </Button>
