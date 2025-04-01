@@ -24,12 +24,9 @@ def create_base_game(request):
 
     if num_players is not None:
         base_game.num_players = num_players
-
     base_game.save()
-
-    
     return Response({
-        "success": "base_game created",
+        "success": "Base game created",
         "base_game": base_game.to_dict()                    
     }, status=status.HTTP_200_OK)
 
@@ -37,16 +34,18 @@ def create_base_game(request):
 @api_view(['DELETE'])
 def delete_base_game(request, game_id):
     try:
-        game_instance = BaseGame.objects.get(id=game_id)  
-        game_instance.delete()
+        game = BaseGame.objects.get(id=game_id)  
+        stock = game.stock
+        stock.delete()
+        game.delete()
         return Response({
-            "message": f"Game with id {game_id} deleted successfully",
+            "message": f"Base game with id {game_id} deleted successfully",
             "game_id" : game_id,
-            }, status=status.HTTP_204_NO_CONTENT)
+            }, status=status.HTTP_200_OK)
     
-    except BaseGame.DoesNotExist:
+    except:
         return Response({
-            "error": f"Game with id {game_id} not found",
+            "error": f"Base game deletion failed. Either a base game with id {game_id} doesn't exist, or the stock associated with the game does not exist.",
             "game_id" : game_id,
             }, status=status.HTTP_404_NOT_FOUND)
 
@@ -61,7 +60,7 @@ def get_game_manager(request):
         serialized_games[game_id] = game.to_dict()
 
     return Response({
-        "success": "game manager returned",
+        "success": "Game manager returned",
         "game_manager": serialized_games
     }, status=status.HTTP_200_OK)
 
@@ -72,37 +71,36 @@ def register_base_game(request, game_id):
     ret = manager.register_game(game_id)
     if (ret == -1):
         return Response({
-            "error": f"game with id {game_id} already registered",
+            "error": f"Base game with id {game_id} already registered",
             "game_id" : game_id
             },status=status.HTTP_400_BAD_REQUEST)
     
 
     if (ret == -2):
         return Response({
-            "error": f"game with id {game_id} does not exist",
+            "error": f"Base game with id {game_id} does not exist",
             "game_id" : game_id
             },status=status.HTTP_400_BAD_REQUEST)
     
     if (ret == 0):
         return Response({
-            "success": f"game with id {game_id} registered successfully",
+            "success": f"Base game with id {game_id} registered successfully",
             "game_id" : game_id
             },status=status.HTTP_200_OK)
     
 
 @api_view(['GET'])
 def get_next_base_game_price_solo(request, game_id):
-
     price = getNextPriceSolo(game_id)
 
     if price == -1:
          return Response({
-            "error": f"game with id {game_id} not registered yet"            
+            "error": f"Base game with id {game_id} not registered yet"            
             },status=status.HTTP_400_BAD_REQUEST)
 
 
     return Response({
-            "success": f"game with id {game_id} price updated successfully",
+            "success": f"Base game with id {game_id} price updated successfully",
             "price": price
             
             },status=status.HTTP_200_OK)

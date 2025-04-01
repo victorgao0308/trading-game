@@ -29,6 +29,7 @@ const GameModeSelector = () => {
     );
   };
 
+
   return (
     <div className="flex justify-center items-center h-screen">
       <Paper className="p-6 w-2/5 shadow-lg bg-white rounded-lg text-center flex flex-col items-center">

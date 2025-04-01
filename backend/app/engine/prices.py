@@ -4,10 +4,8 @@ calculates and returns the price of a given stock
 
 eventually, will use real-world data, current supply/demand, and random events to do so
 '''
-
+from decimal import Decimal, ROUND_DOWN
 import random
-
-
 from ..models import GameManager
 
 
@@ -26,11 +24,22 @@ def getNextPriceSolo(game_id):
     if game == None:
         return -1
     
-    rand = round(random.uniform(-2.5, 2.5), 2)
+    stock = game.stock
 
-    game.cur_price = max(0, game.cur_price + rand)
+    if stock == None:
+        return -1
+    
 
-    return game.cur_price
+    delta = Decimal(str(round(random.uniform(-2.5, 2.5), 2)))
+
+    # ensure new price is non-negative
+    new_price = max(Decimal(0), stock.current_price + delta)
+
+
+    # ensure rounding to 2 decimal places
+    stock.current_price = new_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+
+    return stock.current_price
 
 
 

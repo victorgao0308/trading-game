@@ -103,7 +103,6 @@ class BaseGame(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request_queue = []
-        self.cur_price = 0
 
     def to_dict(self):
         return {
@@ -112,10 +111,8 @@ class BaseGame(models.Model):
             "created_at": self.created_at,
             "num_players": self.num_players,
             "request_queue": self.request_queue,
-            "cur_price": self.cur_price,
             "stock": self.stock.to_dict()
         }
-
 
 
 '''
