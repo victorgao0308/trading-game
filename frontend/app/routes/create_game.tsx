@@ -25,8 +25,30 @@ const GameModeSelector = () => {
   const [numBotsMessage, setNumBotsMessage] = useState("");
 
   const [numMM, setNumMM] = useState("3");
+  const [numMMError, setNumMMError] = useState(false);
+  const [numMMMessage, setNumMMMessage] = useState("");
 
-  const [tradingDays, setTradingDays] = useState("15");
+  const [numTradingDays, setNumTradingDays] = useState("15");
+  const [numTradingDaysError, setNumTradingDaysError] = useState(false);
+  const [numTradingDaysMessage, setNumTradingDaysMessage] = useState("");
+
+  const [numTicksPerDay, setNumTicksPerDay] = useState("60");
+  const [numTicksPerDayError, setNumTicksPerDayError] = useState(false);
+  const [numTicksPerDayMessage, setNumTicksPerDayMessage] = useState("");
+
+  const [timeBetweenTicks, setTimeBetweenTicks] = useState("1");
+  const [timeBetweenTicksError, setTimeBetweenTicksError] = useState(false);
+  const [timeBetweenTicksMessage, setTimeBetweenTicksMessage] = useState("");
+
+  const [startingCash, setStartingCash] = useState("1000");
+  const [startingCashError, setStartingCashError] = useState(false);
+  const [startingCashMessage, setStartingCashMessage] = useState("");
+
+  const [volatility, setVolatility] = useState("10");
+  const [volatilityError, setVolatilityError] = useState(false);
+  const [volatilityMessage, setVolatilityMessage] = useState("");
+
+  const [seed, setSeed] = useState("");
 
   // handlers for scrolling left/right on game type
   const handlePrevious = () => {
@@ -50,38 +72,175 @@ const GameModeSelector = () => {
     setNumBots(e.target.value);
   };
 
-  const handleTradingDays = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTradingDays(e.target.value);
-  };
-
   const handleNumMM = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNumMM(e.target.value);
+  };
+
+  const handleNumTradingDays = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNumTradingDays(e.target.value);
+  };
+
+  const handleNumTicksPerDay = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNumTicksPerDay(e.target.value);
+  };
+
+  const handleTimeBetweenTicks = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTimeBetweenTicks(e.target.value);
+  };
+
+  const handleStartingCash = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStartingCash(e.target.value);
+  };
+
+  const handleVolatility = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVolatility(e.target.value);
+  };
+
+  const handleSeed = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSeed(e.target.value);
   };
 
   // validators for text fields
   useEffect(() => {
     validateNumBots();
+    validateNumMM();
   }, [numBots]);
 
   const validateNumBots = () => {
     const val = parseInt(numBots);
-    console.log(val);
     if (isNaN(val) || val < 1 || val > 100) {
       setNumBotsError(true);
-      setNumBotsMessage("Enter an integer 1 - 100.");
+      setNumBotsMessage("Enter an integer 1 - 100");
     } else {
       setNumBotsError(false);
       setNumBotsMessage("");
     }
   };
 
+  useEffect(() => {
+    validateNumMM();
+  }, [numMM]);
 
+  const validateNumMM = () => {
+    const val = parseInt(numMM);
+    if (isNaN(val) || val < 1 || val > parseInt(numBots)) {
+      setNumMMError(true);
+      setNumMMMessage("Enter an integer 1 - Number of Bots");
+    } else {
+      setNumMMError(false);
+      setNumMMMessage("");
+    }
+  };
 
+  useEffect(() => {
+    validateNumTradingDays();
+  }, [numTradingDays]);
+
+  const validateNumTradingDays = () => {
+    const val = parseInt(numTradingDays);
+    if (isNaN(val) || val < 1 || val > 30) {
+      setNumTradingDaysError(true);
+      setNumTradingDaysMessage("Enter an integer 1 - 30");
+    } else {
+      setNumTradingDaysError(false);
+      setNumTradingDaysMessage("");
+    }
+  };
+
+  useEffect(() => {
+    validateNumTicksPerDay();
+  }, [numTicksPerDay]);
+
+  const validateNumTicksPerDay = () => {
+    const val = parseInt(numTicksPerDay);
+    if (isNaN(val) || val < 1 || val > 120) {
+      setNumTicksPerDayError(true);
+      setNumTicksPerDayMessage("Enter an integer 1 - 120");
+    } else {
+      setNumTicksPerDayError(false);
+      setNumTicksPerDayMessage("");
+    }
+  };
+
+  useEffect(() => {
+    validateTimeBetweenTicks();
+  }, [timeBetweenTicks]);
+
+  const validateTimeBetweenTicks = () => {
+    const val = parseFloat(timeBetweenTicks);
+    if (isNaN(val) || val < 0.1 || val > 5) {
+      setTimeBetweenTicksError(true);
+      setTimeBetweenTicksMessage("Enter a value 0.1 - 5");
+    } else {
+      setTimeBetweenTicksError(false);
+      setTimeBetweenTicksMessage("");
+    }
+  };
+
+  useEffect(() => {
+    validateStartingCash();
+  }, [startingCash]);
+
+  const validateStartingCash = () => {
+    const val = parseInt(startingCash);
+    if (isNaN(val) || val < 1000 || val > 1000000) {
+      setStartingCashError(true);
+      setStartingCashMessage("Enter an integer 1,000 - 1,000,000");
+    } else {
+      setStartingCashError(false);
+      setStartingCashMessage("");
+    }
+  };
+
+  useEffect(() => {
+    validateVolatility();
+  }, [volatility]);
+
+  const validateVolatility = () => {
+    const val = parseFloat(volatility);
+    if (isNaN(val) || val < 1 || val > 100) {
+      setVolatilityError(true);
+      setVolatilityMessage("Enter a value integer 1 - 100");
+    } else {
+      setVolatilityError(false);
+      setVolatilityMessage("");
+    }
+  };
 
   // validate all fields when submitting form
   const validateInputs = () => {
     validateNumBots();
-  }
+    validateNumMM();
+    validateNumTradingDays();
+    validateNumTicksPerDay();
+    validateTimeBetweenTicks();
+    validateStartingCash();
+    validateVolatility();
+
+    if (
+      selectedIndex == 0 &&
+      (numTradingDaysError ||
+        numTicksPerDayError ||
+        timeBetweenTicksError ||
+        startingCashError ||
+        volatilityError)
+    ) {
+      return;
+    } else if (
+      selectedIndex != 0 &&
+      (numBotsError ||
+        numMMError ||
+        numTradingDaysError ||
+        numTicksPerDayError ||
+        timeBetweenTicksError ||
+        startingCashError ||
+        volatilityError)
+    ) {
+      return;
+    }
+
+    console.log("inputs valid");
+  };
 
   return (
     <div className="flex justify-center items-center my-12">
@@ -152,7 +311,7 @@ const GameModeSelector = () => {
                     display: "block",
                     whiteSpace: "normal",
                     width: "12rem",
-                    marginLeft: "-7rem", 
+                    marginLeft: "-7rem",
                     textAlign: "right",
                   },
                 }}
@@ -162,7 +321,9 @@ const GameModeSelector = () => {
               <span>
                 Number of Market Makers{" "}
                 <Tooltip
-                  title="Number of bots to designate as market makers. Market makers provide liquidity by creating bid/ask spreads. Number must be less than or equal to the number of bots. (It is recommended to have 10% of your bots be market makers). Enter an integer 1 - Number of Bots."
+                  title={`Number of bots to designate as market makers. Market makers provide liquidity by creating bid/ask spreads. 
+                  Number must be less than or equal to the number of bots. (It is recommended to have 10% of your bots be market makers). 
+                  Enter an integer 1 - Number of Bots`}
                   className="mb-0.5 ml-1"
                 >
                   <InfoOutline fontSize="small" />
@@ -177,6 +338,19 @@ const GameModeSelector = () => {
                 value={numMM}
                 onChange={handleNumMM}
                 type="number"
+                error={numMMError}
+                helperText={numMMMessage}
+                sx={{
+                  "& .MuiFormHelperText-root": {
+                    fontSize: ".6rem",
+                    margin: "0",
+                    display: "block",
+                    whiteSpace: "normal",
+                    width: "12rem",
+                    marginLeft: "-7rem",
+                    textAlign: "right",
+                  },
+                }}
               />
             </div>
           </>
@@ -200,9 +374,22 @@ const GameModeSelector = () => {
             variant="outlined"
             size="small"
             className="w-20"
-            value={tradingDays}
+            value={numTradingDays}
             type="number"
-            onChange={handleTradingDays}
+            onChange={handleNumTradingDays}
+            error={numTradingDaysError}
+            helperText={numTradingDaysMessage}
+            sx={{
+              "& .MuiFormHelperText-root": {
+                fontSize: ".6rem",
+                margin: "0",
+                display: "block",
+                whiteSpace: "normal",
+                width: "12rem",
+                marginLeft: "-7rem",
+                textAlign: "right",
+              },
+            }}
           />
         </div>
 
@@ -221,7 +408,22 @@ const GameModeSelector = () => {
             variant="outlined"
             size="small"
             className="w-20"
-            value={1}
+            value={numTicksPerDay}
+            onChange={handleNumTicksPerDay}
+            type="number"
+            error={numTicksPerDayError}
+            helperText={numTicksPerDayMessage}
+            sx={{
+              "& .MuiFormHelperText-root": {
+                fontSize: ".6rem",
+                margin: "0",
+                display: "block",
+                whiteSpace: "normal",
+                width: "12rem",
+                marginLeft: "-7rem",
+                textAlign: "right",
+              },
+            }}
           />
         </div>
         <div className="flex justify-between items-center w-full mb-1">
@@ -239,14 +441,29 @@ const GameModeSelector = () => {
             variant="outlined"
             size="small"
             className="w-20"
-            value={1}
+            value={timeBetweenTicks}
+            onChange={handleTimeBetweenTicks}
+            type="number"
+            error={timeBetweenTicksError}
+            helperText={timeBetweenTicksMessage}
+            sx={{
+              "& .MuiFormHelperText-root": {
+                fontSize: ".6rem",
+                margin: "0",
+                display: "block",
+                whiteSpace: "normal",
+                width: "12rem",
+                marginLeft: "-7rem",
+                textAlign: "right",
+              },
+            }}
           />
         </div>
         <div className="flex justify-between items-center w-full mb-1">
           <span>
             Starting Cash
             <Tooltip
-              title="How much cash you (and bots if applicable) start with. Enter a number 1000 - 1000000."
+              title="How much cash you (and bots if applicable) start with. Enter a number 1,000 - 1,000,000."
               className="mb-0.5 ml-1"
             >
               <InfoOutline fontSize="small" />
@@ -256,8 +473,23 @@ const GameModeSelector = () => {
             id="starting-cash"
             variant="outlined"
             size="small"
-            className="w-20"
-            value={1}
+            className="w-28"
+            value={startingCash}
+            onChange={handleStartingCash}
+            type="number"
+            error={startingCashError}
+            helperText={startingCashMessage}
+            sx={{
+              "& .MuiFormHelperText-root": {
+                fontSize: ".6rem",
+                margin: "0",
+                display: "block",
+                whiteSpace: "normal",
+                width: "12rem",
+                marginLeft: "-7rem",
+                textAlign: "right",
+              },
+            }}
           />
         </div>
         <div className="flex justify-between items-center w-full mb-1">
@@ -275,14 +507,29 @@ const GameModeSelector = () => {
             variant="outlined"
             size="small"
             className="w-20"
-            value={1}
+            value={volatility}
+            onChange={handleVolatility}
+            type="number"
+            error={volatilityError}
+            helperText={volatilityMessage}
+            sx={{
+              "& .MuiFormHelperText-root": {
+                fontSize: ".6rem",
+                margin: "0",
+                display: "block",
+                whiteSpace: "normal",
+                width: "12rem",
+                marginLeft: "-7rem",
+                textAlign: "right",
+              },
+            }}
           />
         </div>
         <div className="flex justify-between items-center w-full mb-1">
           <span>
             Seed
             <Tooltip
-              title="Seed that controls random events in game and actions performed by bots. Leave blank for random."
+              title="Seed that controls random events in game and actions performed by bots. Enter any string, or leave blank for a random seed."
               className="mb-0.5 ml-1"
             >
               <InfoOutline fontSize="small" />
@@ -292,7 +539,9 @@ const GameModeSelector = () => {
             id="seed"
             variant="outlined"
             size="small"
-            className="w-20"
+            className="w-48"
+            value={seed}
+            onChange={handleSeed}
           />
         </div>
         <Button
