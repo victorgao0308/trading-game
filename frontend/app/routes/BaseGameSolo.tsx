@@ -83,6 +83,10 @@ const BaseGameSolo = () => {
 
   // loop to generate new data
   useEffect(() => {
+    if (gameId == "") {
+      return;
+    }
+
     let interval: NodeJS.Timeout | undefined;
 
     // generate data
@@ -113,7 +117,7 @@ const BaseGameSolo = () => {
     if (typeof window !== "undefined") {
       const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
       console.log(gameSetup);
-      setGameSetup(gameSetup)
+      setGameSetup(gameSetup);
     }
   }, []);
 
@@ -126,7 +130,7 @@ const BaseGameSolo = () => {
 
       <button onClick={createNewBaseGame}>create new base game</button>
 
-      <div style={{ width: "65%", height: 400 }}>
+      <div style={{ width: "50%", height: 400 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
