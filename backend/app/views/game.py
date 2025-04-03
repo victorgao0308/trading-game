@@ -31,6 +31,23 @@ def create_base_game(request):
     }, status=status.HTTP_200_OK)
 
 
+
+@api_view(['POST'])
+def create_tutorial(request):
+    stock = create_stock("TUTORIAL")
+    
+    base_game = BaseGame()
+
+    base_game.stock = stock
+
+    base_game.save()
+    return Response({
+        "success": "Tutorial created",
+        "base_game": base_game.to_dict()                    
+    }, status=status.HTTP_200_OK)
+
+
+
 @api_view(['DELETE'])
 def delete_base_game(request, game_id):
     try:

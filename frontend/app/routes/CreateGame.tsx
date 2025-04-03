@@ -82,7 +82,7 @@ const CreateGame = () => {
     );
   };
 
-  // set game parameters for the tutorial
+  // set game parameters
   useEffect(() => {
     if (selectedIndex == games.TUTORIAL) {
       setNumTradingDays("3");
@@ -92,6 +92,18 @@ const CreateGame = () => {
       setVolatility("1");
       setSeed("");
       setIsLoaded(true);
+    }
+    else {
+      setNumTradingDays("15");
+      setNumTicksPerDay("60");
+      setTimeBetweenTicks("1");
+      setStartingCash("1000");
+      setVolatility("10");
+      setSeed("");
+    }
+    if (selectedIndex == games.BASE_GAME_REGULAR) {
+      setNumBots("30");
+      setNumMM("3");
     }
   }, [selectedIndex]);
 
@@ -268,6 +280,7 @@ const CreateGame = () => {
     }
 
     let gameSetup: {
+      gameType: number;
       numTradingDays: string;
       numTicksPerDay: string;
       timeBetweenTicks: string;
@@ -276,6 +289,7 @@ const CreateGame = () => {
       seed: string;
       [key: string]: any;
     } = {
+      gameType: selectedIndex,
       numTradingDays,
       numTicksPerDay,
       timeBetweenTicks,
