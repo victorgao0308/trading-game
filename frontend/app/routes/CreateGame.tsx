@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+
 import { Button, Paper } from "@mui/material";
 import { ArrowBack, ArrowForward, InfoOutline } from "@mui/icons-material";
 import { Divider, TextField, Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router";
+
 
 const gameModes = ["Base Game (Solo)", "Base Game (Regular)"];
 const descriptions = [
@@ -11,7 +14,9 @@ const descriptions = [
   "c",
 ];
 
-const GameModeSelector = () => {
+const CreateGame = () => {
+  const navigate = useNavigate();
+
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   // tracks whether or not the user has moved the selection for the game mode
@@ -239,7 +244,31 @@ const GameModeSelector = () => {
       return;
     }
 
-    console.log("inputs valid");
+    let gameSetup: { 
+      numTradingDays: string; 
+      numTicksPerDay: string; 
+      timeBetweenTicks: string; 
+      startingCash: string; 
+      volatility: string; 
+      seed: string;
+      [key: string]: any; 
+    } = {
+      numTradingDays,
+      numTicksPerDay,
+      timeBetweenTicks,
+      startingCash,
+      volatility,
+      seed
+    };
+    
+    if (selectedIndex != 0) {
+      gameSetup.numBots = numBots;
+      gameSetup.numMM = numMM;
+    }
+
+
+    localStorage.setItem("gameSetup", JSON.stringify(gameSetup));
+    navigate("/game");
   };
 
   return (
@@ -556,4 +585,4 @@ const GameModeSelector = () => {
   );
 };
 
-export default GameModeSelector;
+export default CreateGame;

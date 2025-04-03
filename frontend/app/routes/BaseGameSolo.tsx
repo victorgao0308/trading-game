@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useState, useEffect } from "react";
+
 import axios from "axios";
 
 import web_url from "web-url";
@@ -21,7 +22,7 @@ const DATARATE = 1000;
 
 const FAKEDATA: DataPoint[] = [];
 
-const base_game_solo = () => {
+const BaseGameSolo = () => {
   /* ---------------------USESTATES------------------------ */
 
   // array to hold price of stock
@@ -29,6 +30,8 @@ const base_game_solo = () => {
   const [gameId, setGameId] = useState<String>("");
   // state to control if data is being generated
   const [isGeneratingData, setIsGeneratingData] = useState<boolean>(false);
+
+  const [gameSetup, setGameSetup] = useState({});
 
   const toggleDataGeneration = () => {
     setIsGeneratingData((prev) => !prev);
@@ -105,6 +108,15 @@ const base_game_solo = () => {
     };
   }, [isGeneratingData]);
 
+  useEffect(() => {
+    // Check if we're in the browser environment
+    if (typeof window !== "undefined") {
+      const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
+      console.log(gameSetup);
+      setGameSetup(gameSetup)
+    }
+  }, []);
+
   return (
     <>
       <h1>Current Price: </h1>
@@ -140,4 +152,4 @@ const base_game_solo = () => {
   );
 };
 
-export default base_game_solo;
+export default BaseGameSolo;
