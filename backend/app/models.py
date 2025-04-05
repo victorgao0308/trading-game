@@ -92,6 +92,7 @@ class Stock(models.Model):
 '''
 BaseGame
 Base game that includes one stock option
+
 '''
 class BaseGame(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -99,6 +100,8 @@ class BaseGame(models.Model):
     num_players = models.BigIntegerField(default=1)
     seed = models.CharField(max_length=256, default="")
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="games")
+    time_to_next_tick = models.FloatField(default=-1)
+    is_paused = models.BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -111,7 +114,9 @@ class BaseGame(models.Model):
             "created_at": self.created_at,
             "num_players": self.num_players,
             "request_queue": self.request_queue,
-            "stock": self.stock.to_dict()
+            "stock": self.stock.to_dict(),
+            "time_to_next_tick": self.time_to_next_tick,
+            "is_paused": self.is_paused
         }
 
 
@@ -127,4 +132,3 @@ class Player(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.IntegerField(choices=ROLE_CHOICES)
     money = models.DecimalField(default=0, decimal_places=2, max_digits=20)
-

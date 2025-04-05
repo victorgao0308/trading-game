@@ -1,1 +1,11 @@
-finish validation for other input fields
+
+on game page, use parameters from create game to actually create the game
+
+work on solo mode
+    endpoint to buy stock & sell stock
+    endpoint to pause and resume the game (somehow connect frontend clock w/ backend one)
+
+
+have tutorial emcompass regular mode as well
+
+remove console.log statements

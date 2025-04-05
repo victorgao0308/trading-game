@@ -123,4 +123,43 @@ def get_next_base_game_price_solo(request, game_id):
             },status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+def pause_base_game(request, game_id):
+    pause_time = request.data.get('time')
+    try:
+        game = BaseGame.objects.get(id=game_id)  
+        game.is_paused = True
+        game.time_to_next_tick = pause_time
+        game.save()
+        return Response({
+            "message": f"Base game with id {game_id} paused successfully",
+            "game_id" : game_id,
+            "time_to_next_tick": game.time_to_next_tick,
+            "game": game.to_dict()
+            }, status=status.HTTP_200_OK)
     
+    except:
+        return Response({
+            "error": f"Base game pause failed. Either a base game with id {game_id} doesn't exist, or some server error occurred.",
+            "game_id" : game_id,
+            }, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['POST'])
+def resume_base_game(request, game_id):
+    try:
+        game = BaseGame.objects.get(id=game_id)  
+        game.is_paused = False
+        game.time_to_next_tick = -1
+        game.save()
+        return Response({
+            "message": f"Base game with id {game_id} resumed successfully",
+            "game_id" : game_id,
+            "game": game.to_dict()
+            }, status=status.HTTP_200_OK)
+    
+    except:
+        return Response({
+            "error": f"Base game resume failed. Either a base game with id {game_id} doesn't exist, or some server error occurred.",
+            "game_id" : game_id,
+            }, status=status.HTTP_404_NOT_FOUND)

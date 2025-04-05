@@ -7,7 +7,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@mui/material";
 
 import axios from "axios";
 
@@ -23,21 +24,41 @@ const DATARATE = 1000;
 const FAKEDATA: DataPoint[] = [];
 
 const BaseGameSolo = () => {
-  /* ---------------------USESTATES------------------------ */
-
   // array to hold price of stock
   const [data, setData] = useState<DataPoint[]>(FAKEDATA);
   const [gameId, setGameId] = useState<String>("");
+
   // state to control if data is being generated
   const [isGeneratingData, setIsGeneratingData] = useState<boolean>(false);
 
+  // game settings
   const [gameSetup, setGameSetup] = useState({});
+
+  // interval for data generation
+  const interval = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // timestamp of when last data point was generated
+  const lastTimestamp = useRef<number | undefined>(undefined);
+
+  // whether game is paused or not
+  const isPaused = useRef<boolean>(false);
+
+  // timestamp of when game was last resumed / started
+  const lastResumed = useRef<number | undefined>(undefined);
+
+  // time to next tick in ms (if paused)
+  const timeToNextTick = useRef<number | undefined>(undefined);
+
+  // total time spent during this tick (used to properly handle pausing)
+  const timeInTick = useRef<number>(0);
+
+  // indicates whether game is in process of resuming (generating next data point after a pause)
+  // during this time, do not allow the user to pause the game again
+  const [isResuming, setIsResuming] = useState<boolean>(false);
 
   const toggleDataGeneration = () => {
     setIsGeneratingData((prev) => !prev);
   };
-
-  /* ----------------------AXIOS CALLS--------------------- */
 
   // creates a new base game
   const createNewBaseGame = async () => {
@@ -73,7 +94,21 @@ const BaseGameSolo = () => {
     }
   };
 
-  /* ----------------------USE EFFECTS--------------------- */
+  // pauses the current game
+  const pauseGame = async (timeToNextTick: number) => {
+    try {
+      const response = await axios.post(
+        `${web_url}/pause-base-game/${gameId}/`,
+        {
+          time: timeToNextTick,
+        }
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error posting data:", error);
+    }
+  };
+
   // when a new game gets created, register it
   useEffect(() => {
     if (gameId != "") {
@@ -81,19 +116,22 @@ const BaseGameSolo = () => {
     }
   }, [gameId]);
 
-  // loop to generate new data
+  // handle generation of data
   useEffect(() => {
+    // no game registered yet
     if (gameId == "") {
       return;
     }
 
-    let interval: NodeJS.Timeout | undefined;
-
-    // generate data
+    // start/resume generation of data
     if (isGeneratingData) {
-      interval = setInterval(async () => {
-        const next_price = await getNextDataPoint();
+      lastResumed.current = Date.now();
 
+      // generate a new data point
+      const generatePoint = async () => {
+        // don't generate if game is currently paused
+        const currentTime = Date.now();
+        const next_price = await getNextDataPoint();
         setData((prevData) => {
           const newPoint: DataPoint = {
             time: prevData.length + 1,
@@ -101,14 +139,66 @@ const BaseGameSolo = () => {
           };
           return [...prevData, newPoint];
         });
-      }, DATARATE);
+        lastTimestamp.current = currentTime;
+        isPaused.current = false;
+        timeInTick.current = 0;
+      };
+
+      // handle resumption of game from when it was paused
+      // isPaused prevents user from pausing the game again before next data point gets generated
+      if (isPaused.current) {
+        const handleResumption = async () => {
+          setIsResuming(true);
+          try {
+            const response = await axios.post(
+              `${web_url}/resume-base-game/${gameId}/`
+            );
+            console.log(response.data);
+          } catch (error) {
+            console.error("Error posting data:", error);
+          }
+          setTimeout(async () => {
+            generatePoint();
+            interval.current = setInterval(generatePoint, DATARATE);
+
+            setIsResuming(false);
+          }, Math.max(25, DATARATE - timeInTick.current));
+        };
+        handleResumption();
+      } else {
+        interval.current = setInterval(generatePoint, DATARATE);
+      }
     } else {
-      clearInterval(interval);
+      // pause generation of data
+      // save the time remaining the to the next tick so that when the game becomes unpaused the time to
+      // next tick does not restart
+      const handlePause = async () => {
+        const currentTime = Date.now();
+
+        const lastResumedVal = lastResumed.current ? lastResumed.current : 0;
+        const lastTimestampVal = lastTimestamp.current
+          ? lastTimestamp.current
+          : 0;
+
+        if (isPaused.current) {
+          timeInTick.current += currentTime - lastResumedVal;
+        } else {
+          timeInTick.current += currentTime - lastTimestampVal;
+          isPaused.current = true;
+        }
+
+        const remainingTime = DATARATE - timeInTick.current;
+        timeToNextTick.current = remainingTime;
+        await pauseGame(remainingTime);
+        clearInterval(interval.current);
+      };
+
+      handlePause();
     }
 
     // Cleanup interval when effect is removed or toggled off
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval.current) clearInterval(interval.current);
     };
   }, [isGeneratingData]);
 
@@ -124,11 +214,12 @@ const BaseGameSolo = () => {
   return (
     <>
       <h1>Current Price: </h1>
-      <button onClick={toggleDataGeneration}>
-        {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
-      </button>
 
-      <button onClick={createNewBaseGame}>create new base game</button>
+      <Button onClick={toggleDataGeneration} disabled={isResuming}>
+        {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
+      </Button>
+
+      <Button onClick={createNewBaseGame}>create new base game</Button>
 
       <div style={{ width: "50%", height: 400 }}>
         <ResponsiveContainer width="100%" height="100%">
