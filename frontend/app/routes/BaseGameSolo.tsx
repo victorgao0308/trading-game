@@ -19,7 +19,14 @@ interface DataPoint {
   value: number;
 }
 
-const DATARATE = 1000;
+
+// global game variables
+let NUMTICKSPERDAY:number = -1;
+let TIMEBETWEENTICKS:number = -1;
+let NUMTRADINGDAYS:number = -1;
+let CASH:number = -1;
+let VOLATILITY:number = -1;
+
 
 const FAKEDATA: DataPoint[] = [];
 
@@ -30,9 +37,6 @@ const BaseGameSolo = () => {
 
   // state to control if data is being generated
   const [isGeneratingData, setIsGeneratingData] = useState<boolean>(false);
-
-  // game settings
-  const [gameSetup, setGameSetup] = useState({});
 
   // interval for data generation
   const interval = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -159,14 +163,14 @@ const BaseGameSolo = () => {
           }
           setTimeout(async () => {
             generatePoint();
-            interval.current = setInterval(generatePoint, DATARATE);
+            interval.current = setInterval(generatePoint, TIMEBETWEENTICKS);
 
             setIsResuming(false);
-          }, Math.max(25, DATARATE - timeInTick.current));
+          }, Math.max(25, TIMEBETWEENTICKS - timeInTick.current));
         };
         handleResumption();
       } else {
-        interval.current = setInterval(generatePoint, DATARATE);
+        interval.current = setInterval(generatePoint, TIMEBETWEENTICKS);
       }
     } else {
       // pause generation of data
@@ -187,7 +191,7 @@ const BaseGameSolo = () => {
           isPaused.current = true;
         }
 
-        const remainingTime = DATARATE - timeInTick.current;
+        const remainingTime = TIMEBETWEENTICKS - timeInTick.current;
         timeToNextTick.current = remainingTime;
         await pauseGame(remainingTime);
         clearInterval(interval.current);
@@ -207,7 +211,12 @@ const BaseGameSolo = () => {
     if (typeof window !== "undefined") {
       const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
       console.log(gameSetup);
-      setGameSetup(gameSetup);
+      NUMTICKSPERDAY = parseInt(gameSetup.numTicksPerDay);
+      NUMTRADINGDAYS = parseInt(gameSetup.numTradingDays);
+      CASH = parseFloat(gameSetup.startingCash);
+      TIMEBETWEENTICKS = parseFloat(gameSetup.timeBetweenTicks) * 1000;
+      VOLATILITY = parseFloat(gameSetup.volatility);
+      createNewBaseGame();
     }
   }, []);
 
@@ -215,11 +224,11 @@ const BaseGameSolo = () => {
     <>
       <h1>Current Price: </h1>
 
-      <Button onClick={toggleDataGeneration} disabled={isResuming}>
+      <Button onClick={toggleDataGeneration} disabled={gameId === "" || isResuming}>
         {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
       </Button>
 
-      <Button onClick={createNewBaseGame}>create new base game</Button>
+      <Button onClick={createNewBaseGame} disabled={gameId !== ""}> create new base game</Button>
 
       <div style={{ width: "50%", height: 400 }}>
         <ResponsiveContainer width="100%" height="100%">

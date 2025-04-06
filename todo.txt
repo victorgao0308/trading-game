@@ -1,11 +1,15 @@
 
-on game page, use parameters from create game to actually create the game
+figure out a way to select range of prices to use for a stock in solo mode
+
+
 
 work on solo mode
     endpoint to buy stock & sell stock
     endpoint to pause and resume the game (somehow connect frontend clock w/ backend one)
 
 
-have tutorial emcompass regular mode as well
+have tutorial emcompass regular mode as well (or separate tutorials for separet gamemodes?)
 
 remove console.log statements
+
+remove/change django secret key

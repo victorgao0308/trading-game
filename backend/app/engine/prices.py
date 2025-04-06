@@ -35,9 +35,10 @@ def getNextPriceSolo(game_id):
     # ensure new price is non-negative
     new_price = max(Decimal(0), stock.current_price + delta)
 
-
     # ensure rounding to 2 decimal places
     stock.current_price = new_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+
+    stock.save()
 
     return stock.current_price
 

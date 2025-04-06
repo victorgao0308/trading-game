@@ -43,7 +43,7 @@ const CreateGame = () => {
   const [numMMError, setNumMMError] = useState(false);
   const [numMMMessage, setNumMMMessage] = useState("");
 
-  const [numTradingDays, setNumTradingDays] = useState("15");
+  const [numTradingDays, setNumTradingDays] = useState("10");
   const [numTradingDaysError, setNumTradingDaysError] = useState(false);
   const [numTradingDaysMessage, setNumTradingDaysMessage] = useState("");
 
@@ -94,7 +94,7 @@ const CreateGame = () => {
       setIsLoaded(true);
     }
     else {
-      setNumTradingDays("15");
+      setNumTradingDays("10");
       setNumTicksPerDay("60");
       setTimeBetweenTicks("1");
       setStartingCash("1000");
@@ -178,9 +178,9 @@ const CreateGame = () => {
 
   const validateNumTradingDays = () => {
     const val = parseInt(numTradingDays);
-    if (isNaN(val) || val < 1 || val > 30) {
+    if (isNaN(val) || val < 1 || val > 20) {
       setNumTradingDaysError(true);
-      setNumTradingDaysMessage("Enter an integer 1 - 30");
+      setNumTradingDaysMessage("Enter an integer 1 - 20");
     } else {
       setNumTradingDaysError(false);
       setNumTradingDaysMessage("");
@@ -193,9 +193,9 @@ const CreateGame = () => {
 
   const validateNumTicksPerDay = () => {
     const val = parseInt(numTicksPerDay);
-    if (isNaN(val) || val < 1 || val > 120) {
+    if (isNaN(val) || val < 1 || val > 100) {
       setNumTicksPerDayError(true);
-      setNumTicksPerDayMessage("Enter an integer 1 - 120");
+      setNumTicksPerDayMessage("Enter an integer 1 - 100");
     } else {
       setNumTicksPerDayError(false);
       setNumTicksPerDayMessage("");
@@ -304,7 +304,10 @@ const CreateGame = () => {
     }
 
     localStorage.setItem("gameSetup", JSON.stringify(gameSetup));
-    navigate("/game");
+
+    if (selectedIndex == games.BASE_GAME_SOLO) {
+      navigate("/game");
+    }
   };
 
   return (
@@ -435,7 +438,7 @@ const CreateGame = () => {
               <span>
                 Number of Trading Days
                 <Tooltip
-                  title="Number of trading days in the game. The game ends after the specified number of trading days. Enter an integer 1 - 30."
+                  title="Number of trading days in the game. The game ends after the specified number of trading days. Enter an integer 1 - 20."
                   className="mb-0.5 ml-1"
                 >
                   <InfoOutline fontSize="small" />
@@ -471,7 +474,7 @@ const CreateGame = () => {
               <span>
                 Number of Ticks per Day
                 <Tooltip
-                  title="Number ticks per trading day. A tick is an update in stock price. Enter an integer 1 - 120."
+                  title="Number ticks per trading day. A tick is an update in stock price. Enter an integer 1 - 100."
                   className="mb-0.5 ml-1"
                 >
                   <InfoOutline fontSize="small" />

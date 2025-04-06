@@ -12,7 +12,7 @@ def create_stock(seed):
     if seed != "":
         random.seed(seed)
 
-    with open("app/data/stocks.json", "r") as file:
+    with open("app/data/stocks_meta.json", "r") as file:
         data = json.load(file)
 
     data = random.choice(data)
