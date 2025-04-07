@@ -9,5 +9,5 @@ def process_data(inputFile):
     df.to_csv(f'../stock_prices/{inputFile}')
 
 
-process_data("tsla.csv")
+process_data("sbux.csv")
 
