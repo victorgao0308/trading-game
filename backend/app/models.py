@@ -48,22 +48,6 @@ class GameManager():
         return self.games[game_id]
     
 
-    # def update_game_state(self, game_id):
-    #     try:
-    #         game = BaseGame.objects.get(id=game_id)
-    #         stock = game.stock
-    #         game.stock = Stock.objects.get(id=stock.id)
-            
-    #     except ObjectDoesNotExist:
-    #         return f"ERORR: game with id {game_id} does not exist"
-        
-    #     self.games[game_id] = game  
-    #     return f"SUCCESS: game with id {game_id} updated"
-
-    # def __str__(self):
-    #     return f""
-    
-
 '''
 Stock
 
@@ -91,14 +75,11 @@ class Stock(models.Model):
     buy_orders = models.JSONField(default=dict)
     sell_orders = models.JSONField(default=dict)
 
-
     # past stock prices
     past_values = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
 
     # values calculated in advance will be stored in this array
     next_values = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
-
-
 
     def to_dict(self):
         return {
@@ -108,6 +89,9 @@ class Stock(models.Model):
             "description": self.description,
             "current_price": self.current_price,
             "industries": self.industries,
+            "ticks_generated": self.ticks_generated,
+            "underlying_stock": self.underlying_stock,
+            "first_tick_index": self.first_tick_index,
             "buy_orders": self.buy_orders,
             "sell_orders": self.sell_orders,
             "next_values": self.next_values,

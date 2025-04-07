@@ -73,11 +73,27 @@ const BaseGameSolo = () => {
     const gameId = localStorage.getItem("gameId");
     if (gameId != null) {
       try {
+        setGameId(gameId);
         const response = await axios.get(`${web_url}/get-game-manager/`);
+        console.log(response);
         const pastValues = response.data.game_manager[gameId].stock.past_values; 
-        console.log(pastValues);
+
+        // load in saved data from database
+        let prevData: DataPoint[] = [];
+        pastValues.forEach((price: number) => {
+          const newDataPoint: DataPoint = {
+            time: prevData.length + 1 - 10,
+            value: price,
+          };
+          prevData.push(newDataPoint);
+          minValue.current = Math.min(minValue.current, price);
+          maxValue.current = Math.max(maxValue.current, price);
+        });
+
+        setData(prevData);
+        console.log(response.data.game_manager[gameId].stock)
       } catch (error) {
-        console.log("error gettig game manager:", error);
+        console.log("error getting game manager and loading previous data:", error);
       }
     } else {
       try {
@@ -262,6 +278,8 @@ const BaseGameSolo = () => {
       <h1>
         Current Price: {data.length >= 1 ? data[data.length - 1].value : 0}
       </h1>
+
+      <h1>Game Id: {gameId}</h1>
 
       <Button
         onClick={toggleDataGeneration}

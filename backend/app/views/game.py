@@ -27,8 +27,6 @@ def create_base_game(request):
     base_game.seed = seed
     base_game.stock = stock
 
-    # manager = GameManager()
-    # manager.update_game_state(base_game.id)
 
     if num_players is not None:
         base_game.num_players = num_players
@@ -96,9 +94,9 @@ def register_base_game(request, game_id):
     ret = manager.register_game(game_id)
     if (ret == -1):
         return Response({
-            "error": f"Base game with id {game_id} already registered",
+            "note": f"Base game with id {game_id} already registered",
             "game_id" : game_id
-            },status=status.HTTP_400_BAD_REQUEST)
+            },status=status.HTTP_200_OK)
     
 
     if (ret == -2):
@@ -119,8 +117,6 @@ def register_base_game(request, game_id):
 def get_next_base_game_price_solo(request, game_id):
     price = getNextPriceSolo(game_id)
 
-    # manager = GameManager()
-    # manager.update_game_state(game_id)
 
     if price == -1:
          return Response({
