@@ -8,12 +8,16 @@ from django.contrib.postgres.fields import ArrayField
 '''
 GameManager
 
+NOT UTILIZED
+
 Keeps track of current active games, GameManager is not stored in the database; instead, it acts as global manager
 to keep track of the games that are currently running
 
 Uses singleton pattern; calling GameManager() only creates a new instance if it doesn't exist, returns current instance
 if one already exists
 '''
+
+
 class GameManager():
     _instance = None
     def __new__(cls, *args, **kwargs):

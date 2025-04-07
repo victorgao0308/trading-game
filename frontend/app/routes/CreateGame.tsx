@@ -51,7 +51,7 @@ const CreateGame = () => {
   const [numTicksPerDayError, setNumTicksPerDayError] = useState(false);
   const [numTicksPerDayMessage, setNumTicksPerDayMessage] = useState("");
 
-  const [timeBetweenTicks, setTimeBetweenTicks] = useState("1");
+  const [timeBetweenTicks, setTimeBetweenTicks] = useState("1.5");
   const [timeBetweenTicksError, setTimeBetweenTicksError] = useState(false);
   const [timeBetweenTicksMessage, setTimeBetweenTicksMessage] = useState("");
 
@@ -96,7 +96,7 @@ const CreateGame = () => {
     else {
       setNumTradingDays("10");
       setNumTicksPerDay("60");
-      setTimeBetweenTicks("1");
+      setTimeBetweenTicks("1.5");
       setStartingCash("1000");
       setVolatility("10");
       setSeed("");

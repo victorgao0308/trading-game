@@ -1,7 +1,9 @@
-
-figure out a way to select range of prices to use for a stock in solo mode
+add multiplier to stock values?
 get better stock data
 add game to game manager?
+create player object on game creation
+for solo mode, save all stock prices to object (no to db) to avoid having to read the file every single time
+have a way to detect when stock price will rise / fall, and generate random events 
 
 
 

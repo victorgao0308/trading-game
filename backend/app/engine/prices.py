@@ -7,7 +7,8 @@ eventually, will use real-world data, current supply/demand, and random events t
 from decimal import Decimal, ROUND_DOWN
 import random
 from ..models import GameManager
-
+import os
+import pandas as pd
 
 '''
 Gets next price in solo mode.
@@ -28,15 +29,20 @@ def getNextPriceSolo(game_id):
 
     if stock == None:
         return -1
-    
 
-    delta = Decimal(str(round(random.uniform(-2.5, 2.5), 2)))
+    df = pd.read_csv(stock.underlying_stock)
+    index = stock.first_tick_index - stock.ticks_generated
+    new_price = df.at[index, "Price"]
 
-    # ensure new price is non-negative
-    new_price = max(Decimal(0), stock.current_price + delta)
+    new_price = Decimal(new_price[1:])
+
+
+    print(stock.underlying_stock, index, new_price)
 
     # ensure rounding to 2 decimal places
     stock.current_price = new_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+
+    stock.ticks_generated += 1
 
     stock.save()
 

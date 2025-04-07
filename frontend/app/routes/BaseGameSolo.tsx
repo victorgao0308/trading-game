@@ -61,6 +61,11 @@ const BaseGameSolo = () => {
   // during this time, do not allow the user to pause the game again
   const [isResuming, setIsResuming] = useState<boolean>(false);
 
+
+  // min and max values genereated so far, used to scale the axis
+  const minValue = useRef<number>(Infinity);
+  const maxValue = useRef<number>(-Infinity);
+
   const toggleDataGeneration = () => {
     setIsGeneratingData((prev) => !prev);
   };
@@ -69,7 +74,8 @@ const BaseGameSolo = () => {
   const createNewBaseGame = async () => {
     try {
       const response = await axios.post(`${web_url}/create-base-game/`,{
-        seed: SEED
+        seed: SEED,
+        total_ticks: NUMTICKSPERDAY * NUMTRADINGDAYS
       });
       console.log(response);
       setGameId(response.data.base_game.id);
@@ -139,6 +145,9 @@ const BaseGameSolo = () => {
         // don't generate if game is currently paused
         const currentTime = Date.now();
         const next_price = await getNextDataPoint();
+
+        minValue.current = Math.min(minValue.current, next_price);
+        maxValue.current = Math.max(maxValue.current, next_price);
         setData((prevData) => {
           const newPoint: DataPoint = {
             time: prevData.length + 1,
@@ -243,7 +252,7 @@ const BaseGameSolo = () => {
               type="number"
               domain={["dataMin", "dataMax"]}
             />
-            <YAxis />
+            <YAxis domain={[Math.round((minValue.current * 0.9 ) * 100) / 100, Math.round((maxValue.current * 1.1) * 100) / 100]}/>
 
             {isGeneratingData ? <></> : <Tooltip />}
             <Line

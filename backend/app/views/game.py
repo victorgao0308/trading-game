@@ -12,6 +12,7 @@ import random
 @api_view(['POST'])
 def create_base_game(request):
     num_players = request.data.get('num_players')
+    total_ticks = request.data.get('total_ticks')
     seed = request.data.get('seed')
 
     # generate a random seed if no seed provided
@@ -20,7 +21,7 @@ def create_base_game(request):
         seed = ''.join(random.choices(characters, k=16))
 
 
-    stock = create_stock(seed)
+    stock = create_stock(seed, total_ticks)
     base_game = BaseGame()
     base_game.seed = seed
     base_game.stock = stock
