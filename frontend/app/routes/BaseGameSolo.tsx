@@ -35,6 +35,7 @@ const BaseGameSolo = () => {
   // array to hold price of stock
   const [data, setData] = useState<DataPoint[]>(FAKEDATA);
   const [gameId, setGameId] = useState<String>("");
+  
 
   // state to control if data is being generated
   const [isGeneratingData, setIsGeneratingData] = useState<boolean>(false);
@@ -235,7 +236,7 @@ const BaseGameSolo = () => {
 
   return (
     <>
-      <h1>Current Price: </h1>
+      <h1>Current Price: {data.length >= 1 ? data[data.length - 1].value : 0}</h1>
 
       <Button onClick={toggleDataGeneration} disabled={gameId === "" || isResuming}>
         {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
