@@ -304,6 +304,7 @@ const CreateGame = () => {
     }
 
     localStorage.setItem("gameSetup", JSON.stringify(gameSetup));
+    localStorage.removeItem("gameId");
 
     if (selectedIndex == games.BASE_GAME_SOLO) {
       navigate("/game");

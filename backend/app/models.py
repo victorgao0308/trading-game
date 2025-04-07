@@ -36,6 +36,7 @@ class GameManager():
         else:
             try:
                 game = BaseGame.objects.get(id=game_id)
+                print(game.to_dict)
                 self.games[game_id] = game
                 return 0
             except ObjectDoesNotExist:
@@ -47,18 +48,20 @@ class GameManager():
         return self.games[game_id]
     
 
-    def update_game_state(self, game_id):
-        try:
-            game = BaseGame.objects.get(id=game_id)
+    # def update_game_state(self, game_id):
+    #     try:
+    #         game = BaseGame.objects.get(id=game_id)
+    #         stock = game.stock
+    #         game.stock = Stock.objects.get(id=stock.id)
             
-        except ObjectDoesNotExist:
-            return f"ERORR: game with id {game_id} does not exist"
+    #     except ObjectDoesNotExist:
+    #         return f"ERORR: game with id {game_id} does not exist"
         
-        self.games[game_id] = game  
-        return f"SUCCESS: game with id {game_id} updated"
+    #     self.games[game_id] = game  
+    #     return f"SUCCESS: game with id {game_id} updated"
 
-    def __str__(self):
-        return f""
+    # def __str__(self):
+    #     return f""
     
 
 '''
@@ -89,10 +92,12 @@ class Stock(models.Model):
     sell_orders = models.JSONField(default=dict)
 
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # values calculated in advance will be stored in this array
-        self.next_values = []
+    # past stock prices
+    past_values = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
+
+    # values calculated in advance will be stored in this array
+    next_values = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
+
 
 
     def to_dict(self):
@@ -104,7 +109,9 @@ class Stock(models.Model):
             "current_price": self.current_price,
             "industries": self.industries,
             "buy_orders": self.buy_orders,
-            "sell_orders": self.sell_orders
+            "sell_orders": self.sell_orders,
+            "next_values": self.next_values,
+            "past_values": self.past_values
         }
 
 '''
@@ -119,7 +126,7 @@ class BaseGame(models.Model):
     seed = models.CharField(max_length=256, default="")
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="games")
     time_to_next_tick = models.FloatField(default=-1)
-    is_paused = models.BooleanField(default=False)
+    is_paused = models.BooleanField(default=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

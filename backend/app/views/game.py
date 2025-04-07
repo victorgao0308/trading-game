@@ -27,6 +27,9 @@ def create_base_game(request):
     base_game.seed = seed
     base_game.stock = stock
 
+    # manager = GameManager()
+    # manager.update_game_state(base_game.id)
+
     if num_players is not None:
         base_game.num_players = num_players
     base_game.save()
@@ -72,7 +75,6 @@ def delete_base_game(request, game_id):
             "game_id" : game_id,
             }, status=status.HTTP_404_NOT_FOUND)
 
-
 @api_view(['GET'])
 def get_game_manager(request):
     manager = GameManager()
@@ -108,13 +110,17 @@ def register_base_game(request, game_id):
     if (ret == 0):
         return Response({
             "success": f"Base game with id {game_id} registered successfully",
-            "game_id" : game_id
+            "game_id" : game_id,
+            "game": BaseGame.objects.get(id=game_id).to_dict()
             },status=status.HTTP_200_OK)
     
 
 @api_view(['GET'])
 def get_next_base_game_price_solo(request, game_id):
     price = getNextPriceSolo(game_id)
+
+    # manager = GameManager()
+    # manager.update_game_state(game_id)
 
     if price == -1:
          return Response({
@@ -124,7 +130,7 @@ def get_next_base_game_price_solo(request, game_id):
 
     return Response({
             "success": f"Base game with id {game_id} price updated successfully",
-            "price": price
+            "price": price 
             
             },status=status.HTTP_200_OK)
 

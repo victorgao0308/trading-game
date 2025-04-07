@@ -41,6 +41,8 @@ def getNextPriceSolo(game_id):
 
     stock.ticks_generated += 1
 
+    stock.past_values.append(stock.current_price)
+
     stock.save()
 
     return stock.current_price

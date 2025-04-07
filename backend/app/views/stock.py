@@ -46,8 +46,9 @@ def create_stock(seed, total_ticks):
     initial_prices = list(df['Price'].iloc[start_index - 9: start_index + 1][::-1])
     for i in range(len(initial_prices)):
         initial_prices[i] = Decimal(initial_prices[i][1:]).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+        stock.past_values.append(initial_prices[i])
 
-    stock.current_price = -1
+    stock.current_price = initial_prices[-1]
 
     stock.stock_name = data["stock_name"]
     stock.company_name = data["company_name"]

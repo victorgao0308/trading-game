@@ -20,15 +20,13 @@ interface DataPoint {
   value: number;
 }
 
-
 // global game variables
-let NUMTICKSPERDAY:number = -1;
-let TIMEBETWEENTICKS:number = -1;
-let NUMTRADINGDAYS:number = -1;
-let CASH:number = -1;
-let VOLATILITY:number = -1;
-let SEED:string = "";
-
+let NUMTICKSPERDAY: number = -1;
+let TIMEBETWEENTICKS: number = -1;
+let NUMTRADINGDAYS: number = -1;
+let CASH: number = -1;
+let VOLATILITY: number = -1;
+let SEED: string = "";
 
 const FAKEDATA: DataPoint[] = [];
 
@@ -36,7 +34,6 @@ const BaseGameSolo = () => {
   // array to hold price of stock
   const [data, setData] = useState<DataPoint[]>(FAKEDATA);
   const [gameId, setGameId] = useState<String>("");
-  
 
   // state to control if data is being generated
   const [isGeneratingData, setIsGeneratingData] = useState<boolean>(false);
@@ -63,7 +60,6 @@ const BaseGameSolo = () => {
   // during this time, do not allow the user to pause the game again
   const [isResuming, setIsResuming] = useState<boolean>(false);
 
-
   // min and max values genereated so far, used to scale the axis
   const minValue = useRef<number>(Infinity);
   const maxValue = useRef<number>(-Infinity);
@@ -74,31 +70,41 @@ const BaseGameSolo = () => {
 
   // creates a new base game
   const createNewBaseGame = async () => {
-    try {
-      const response = await axios.post(`${web_url}/create-base-game/`,{
-        seed: SEED,
-        total_ticks: NUMTICKSPERDAY * NUMTRADINGDAYS
-      });
-      console.log(response);
+    const gameId = localStorage.getItem("gameId");
+    if (gameId != null) {
+      try {
+        const response = await axios.get(`${web_url}/get-game-manager/`);
+        const pastValues = response.data.game_manager[gameId].stock.past_values; 
+        console.log(pastValues);
+      } catch (error) {
+        console.log("error gettig game manager:", error);
+      }
+    } else {
+      try {
+        const response = await axios.post(`${web_url}/create-base-game/`, {
+          seed: SEED,
+          total_ticks: NUMTICKSPERDAY * NUMTRADINGDAYS,
+        });
 
+        let initialData: DataPoint[] = [];
+        response.data.initial_prices.forEach((price: number) => {
+          const newDataPoint: DataPoint = {
+            time: initialData.length + 1 - 10,
+            value: price,
+          };
+          initialData.push(newDataPoint);
+          minValue.current = Math.min(minValue.current, price);
+          maxValue.current = Math.max(maxValue.current, price);
+        });
 
-      let initialData:DataPoint[] = []
-      response.data.initial_prices.forEach((price: number) => {
-        const newDataPoint:DataPoint = {
-          time:initialData.length + 1 - 10,
-          value:price
-        }
-        initialData.push(newDataPoint)
-        minValue.current = Math.min(minValue.current, price);
-        maxValue.current = Math.max(maxValue.current, price);
+        setData(initialData);
 
-      })
-
-      setData(initialData);
-
-      setGameId(response.data.base_game.id);
-    } catch (error) {
-      console.error("Error posting data:", error);
+        setGameId(response.data.base_game.id);
+        localStorage.setItem("gameId", response.data.base_game.id);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error posting data:", error);
+      }
     }
   };
 
@@ -253,13 +259,21 @@ const BaseGameSolo = () => {
 
   return (
     <>
-      <h1>Current Price: {data.length >= 1 ? data[data.length - 1].value : 0}</h1>
+      <h1>
+        Current Price: {data.length >= 1 ? data[data.length - 1].value : 0}
+      </h1>
 
-      <Button onClick={toggleDataGeneration} disabled={gameId === "" || isResuming}>
+      <Button
+        onClick={toggleDataGeneration}
+        disabled={gameId === "" || isResuming}
+      >
         {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
       </Button>
 
-      <Button onClick={createNewBaseGame} disabled={gameId !== ""}> create new base game</Button>
+      <Button onClick={createNewBaseGame} disabled={gameId !== ""}>
+        {" "}
+        create new base game
+      </Button>
 
       <div style={{ width: "50%", height: 400 }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -270,7 +284,12 @@ const BaseGameSolo = () => {
               type="number"
               domain={["dataMin", "dataMax"]}
             />
-            <YAxis domain={[Math.round((minValue.current * 0.9 ) * 100) / 100, Math.round((maxValue.current * 1.1) * 100) / 100]}/>
+            <YAxis
+              domain={[
+                Math.round(minValue.current * 0.9 * 100) / 100,
+                Math.round(maxValue.current * 1.1 * 100) / 100,
+              ]}
+            />
 
             {isGeneratingData ? <></> : <Tooltip />}
             <Line
@@ -280,8 +299,12 @@ const BaseGameSolo = () => {
               dot={true}
               isAnimationActive={false}
             />
-            <ReferenceLine x={0} stroke="red" strokeWidth={2} strokeDasharray="3 3" />
-
+            <ReferenceLine
+              x={0}
+              stroke="red"
+              strokeWidth={2}
+              strokeDasharray="3 3"
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
