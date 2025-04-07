@@ -26,6 +26,7 @@ let TIMEBETWEENTICKS:number = -1;
 let NUMTRADINGDAYS:number = -1;
 let CASH:number = -1;
 let VOLATILITY:number = -1;
+let SEED:string = "";
 
 
 const FAKEDATA: DataPoint[] = [];
@@ -67,7 +68,9 @@ const BaseGameSolo = () => {
   // creates a new base game
   const createNewBaseGame = async () => {
     try {
-      const response = await axios.post(`${web_url}/create-base-game/`);
+      const response = await axios.post(`${web_url}/create-base-game/`,{
+        seed: SEED
+      });
       console.log(response);
       setGameId(response.data.base_game.id);
     } catch (error) {
@@ -216,6 +219,7 @@ const BaseGameSolo = () => {
       CASH = parseFloat(gameSetup.startingCash);
       TIMEBETWEENTICKS = parseFloat(gameSetup.timeBetweenTicks) * 1000;
       VOLATILITY = parseFloat(gameSetup.volatility);
+      SEED = gameSetup.seed;
       createNewBaseGame();
     }
   }, []);

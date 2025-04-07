@@ -2,24 +2,27 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from ..models import BaseGame, GameManager
-
-
 from ..engine.prices import getNextPriceSolo
 
 from .stock import create_stock
+
+import string
+import random
 
 @api_view(['POST'])
 def create_base_game(request):
     num_players = request.data.get('num_players')
     seed = request.data.get('seed')
 
-    if seed is None:
-        seed = ""
+    # generate a random seed if no seed provided
+    if seed is None or seed == "":
+        characters = string.ascii_letters + string.digits
+        seed = ''.join(random.choices(characters, k=16))
+
 
     stock = create_stock(seed)
-    
     base_game = BaseGame()
-
+    base_game.seed = seed
     base_game.stock = stock
 
     if num_players is not None:

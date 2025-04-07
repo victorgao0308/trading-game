@@ -1,5 +1,7 @@
 
 figure out a way to select range of prices to use for a stock in solo mode
+get better stock data
+add game to game manager?
 
 
 

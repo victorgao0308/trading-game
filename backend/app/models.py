@@ -63,8 +63,11 @@ Stock
 Base stock class. Keeps track of stock name, company name, and a short description of the company. Includes
 current stock price, and current buy and sell orders, if applicable.
 
-Industries field contains a list of industries and sectors relevant to the current stock. This is used to
+industries: contains a list of industries and sectors relevant to the current stock. This is used to
 generate random events in the game.
+ticks_generated: number of ticks generated for this stock
+underlying_stock: name of the real-world stock that prices are derived from
+first_tick_index: the index from the stock data that corresponds to the first price generated
 '''
 class Stock(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -73,6 +76,13 @@ class Stock(models.Model):
     description = models.TextField(default="Default stock description")
     current_price = models.DecimalField(default=0, decimal_places=2, max_digits=20)
     industries = ArrayField(models.CharField(max_length=256), blank=True, default=list)
+
+    ticks_generated = models.BigIntegerField(default=0)
+    underlying_stock = models.CharField(max_length=256, default="")
+    first_tick_index = models.BigIntegerField(default=-1)
+
+
+
     buy_orders = models.JSONField(default=dict)
     sell_orders = models.JSONField(default=dict)
 
@@ -113,6 +123,7 @@ class BaseGame(models.Model):
             "id": self.id,
             "created_at": self.created_at,
             "num_players": self.num_players,
+            "seed": self.seed,
             "request_queue": self.request_queue,
             "stock": self.stock.to_dict(),
             "time_to_next_tick": self.time_to_next_tick,

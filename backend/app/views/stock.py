@@ -4,17 +4,16 @@ from rest_framework.decorators import api_view
 from ..models import Stock
 import random
 import json
-
+import os
 
 def create_stock(seed):
     stock = Stock()
 
-    if seed != "":
-        random.seed(seed)
+    # set the seed
+    random.seed(seed)
 
     with open("app/data/stocks_meta.json", "r") as file:
         data = json.load(file)
-
     data = random.choice(data)
 
     stock.stock_name = data["stock_name"]
