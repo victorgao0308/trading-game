@@ -36,7 +36,6 @@ class GameManager():
         else:
             try:
                 game = BaseGame.objects.get(id=game_id)
-                print(game.to_dict)
                 self.games[game_id] = game
                 return 0
             except ObjectDoesNotExist:

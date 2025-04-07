@@ -75,7 +75,6 @@ const BaseGameSolo = () => {
       try {
         setGameId(gameId);
         const response = await axios.get(`${web_url}/get-game-manager/`);
-        console.log(response);
         const pastValues = response.data.game_manager[gameId].stock.past_values; 
 
         // load in saved data from database
@@ -91,9 +90,8 @@ const BaseGameSolo = () => {
         });
 
         setData(prevData);
-        console.log(response.data.game_manager[gameId].stock)
       } catch (error) {
-        console.log("error getting game manager and loading previous data:", error);
+        console.error("error getting game manager and loading previous data:", error);
       }
     } else {
       try {
@@ -117,7 +115,6 @@ const BaseGameSolo = () => {
 
         setGameId(response.data.base_game.id);
         localStorage.setItem("gameId", response.data.base_game.id);
-        console.log(response.data);
       } catch (error) {
         console.error("Error posting data:", error);
       }
@@ -156,7 +153,6 @@ const BaseGameSolo = () => {
           time: timeToNextTick,
         }
       );
-      console.log(response.data);
     } catch (error) {
       console.error("Error posting data:", error);
     }
@@ -209,7 +205,6 @@ const BaseGameSolo = () => {
             const response = await axios.post(
               `${web_url}/resume-base-game/${gameId}/`
             );
-            console.log(response.data);
           } catch (error) {
             console.error("Error posting data:", error);
           }
@@ -262,7 +257,6 @@ const BaseGameSolo = () => {
     // Check if we're in the browser environment
     if (typeof window !== "undefined") {
       const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
-      console.log(gameSetup);
       NUMTICKSPERDAY = parseInt(gameSetup.numTicksPerDay);
       NUMTRADINGDAYS = parseInt(gameSetup.numTradingDays);
       CASH = parseFloat(gameSetup.startingCash);
