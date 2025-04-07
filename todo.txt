@@ -1,16 +1,19 @@
 add multiplier to stock values?
-get better stock data
-add game to game manager?
 create player object on game creation
-for solo mode, save all stock prices to object (no to db) to avoid having to read the file every single time
+for solo mode, save all stock prices to object (not to db) to avoid having to read the file every single time
 have a way to detect when stock price will rise / fall, and generate random events 
 have a way for days to end after numticks per day has passed (5 sec after last tick is genereated, send user to next screen?)
+add color/symbols in price UI to indicate increases/decreases in price
+before game even starts, generate 5 - 10 data points in advance
 
+for later days, first 5 - 10 points are the last 5 - 10 points of the day before
 
 work on solo mode
     endpoint to buy stock & sell stock
     endpoint to pause and resume the game (somehow connect frontend clock w/ backend one)
 
+get better stock data
+add game to game manager?
 
 have tutorial emcompass regular mode as well (or separate tutorials for separet gamemodes?)
 

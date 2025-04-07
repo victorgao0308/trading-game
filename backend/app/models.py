@@ -85,10 +85,14 @@ class Stock(models.Model):
     underlying_stock = models.CharField(max_length=256, default="")
     first_tick_index = models.BigIntegerField(default=-1)
 
-
-
     buy_orders = models.JSONField(default=dict)
     sell_orders = models.JSONField(default=dict)
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # values calculated in advance will be stored in this array
+        self.next_values = []
 
 
     def to_dict(self):

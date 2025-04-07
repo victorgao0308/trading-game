@@ -1,3 +1,4 @@
+from decimal import Decimal, ROUND_DOWN
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -6,6 +7,7 @@ import random
 import json
 import os
 import pandas as pd
+
 
 def create_stock(seed, total_ticks):
     stock = Stock()
@@ -34,9 +36,17 @@ def create_stock(seed, total_ticks):
 
     # make sure we have enough points to generate data for
     # total data points needed is total_ticks
-    start_index = random.randint(total_ticks - 1, total_data_points - 1)
+    # save space to generate 10 initial points
+    start_index = random.randint(total_ticks + 9, total_data_points - 1)
     stock.first_tick_index = start_index
-    stock.ticks_generated = 0
+    stock.ticks_generated = 10
+
+
+    # get first 10 prices, & remove the $ in front
+    initial_prices = list(df['Price'].iloc[start_index - 9: start_index + 1][::-1])
+    for i in range(len(initial_prices)):
+        initial_prices[i] = Decimal(initial_prices[i][1:]).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+
     stock.current_price = -1
 
     stock.stock_name = data["stock_name"]
@@ -47,7 +57,7 @@ def create_stock(seed, total_ticks):
 
     stock.save()
 
-    return stock
+    return stock, initial_prices
 
 
     

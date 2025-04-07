@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@mui/material";
@@ -79,6 +80,22 @@ const BaseGameSolo = () => {
         total_ticks: NUMTICKSPERDAY * NUMTRADINGDAYS
       });
       console.log(response);
+
+
+      let initialData:DataPoint[] = []
+      response.data.initial_prices.forEach((price: number) => {
+        const newDataPoint:DataPoint = {
+          time:initialData.length + 1 - 10,
+          value:price
+        }
+        initialData.push(newDataPoint)
+        minValue.current = Math.min(minValue.current, price);
+        maxValue.current = Math.max(maxValue.current, price);
+
+      })
+
+      setData(initialData);
+
       setGameId(response.data.base_game.id);
     } catch (error) {
       console.error("Error posting data:", error);
@@ -151,7 +168,7 @@ const BaseGameSolo = () => {
         maxValue.current = Math.max(maxValue.current, next_price);
         setData((prevData) => {
           const newPoint: DataPoint = {
-            time: prevData.length + 1,
+            time: prevData.length + 1 - 10,
             value: next_price,
           };
           return [...prevData, newPoint];
@@ -263,6 +280,8 @@ const BaseGameSolo = () => {
               dot={true}
               isAnimationActive={false}
             />
+            <ReferenceLine x={0} stroke="red" strokeWidth={2} strokeDasharray="3 3" />
+
           </LineChart>
         </ResponsiveContainer>
       </div>

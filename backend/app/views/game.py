@@ -21,7 +21,8 @@ def create_base_game(request):
         seed = ''.join(random.choices(characters, k=16))
 
 
-    stock = create_stock(seed, total_ticks)
+    stock, initial_prices = create_stock(seed, total_ticks)
+
     base_game = BaseGame()
     base_game.seed = seed
     base_game.stock = stock
@@ -31,7 +32,8 @@ def create_base_game(request):
     base_game.save()
     return Response({
         "success": "Base game created",
-        "base_game": base_game.to_dict()                    
+        "base_game": base_game.to_dict(),
+        "initial_prices": initial_prices                   
     }, status=status.HTTP_200_OK)
 
 

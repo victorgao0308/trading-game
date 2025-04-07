@@ -36,9 +36,6 @@ def getNextPriceSolo(game_id):
 
     new_price = Decimal(new_price[1:])
 
-
-    print(stock.underlying_stock, index, new_price)
-
     # ensure rounding to 2 decimal places
     stock.current_price = new_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
 
