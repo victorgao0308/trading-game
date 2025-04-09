@@ -9,7 +9,13 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useState, useEffect, useRef } from "react";
-import { Button, CircularProgress } from "@mui/material";
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  Slide,
+  Snackbar,
+} from "@mui/material";
 
 import axios from "axios";
 
@@ -346,7 +352,14 @@ const BaseGameSolo = () => {
                 dataKey="time"
                 type="number"
                 domain={["dataMin", "dataMax"]}
-                ticks = {[-9, -5, 0].concat(Array.from({length: Math.floor((data.length - 10) / 5) + 1}, (_, i) => i * 5)).concat([data.length - 10])}
+                ticks={[-9, -5, 0]
+                  .concat(
+                    Array.from(
+                      { length: Math.floor((data.length - 10) / 5) + 1 },
+                      (_, i) => i * 5
+                    )
+                  )
+                  .concat([data.length - 10])}
               />
               <YAxis
                 domain={[
@@ -370,7 +383,7 @@ const BaseGameSolo = () => {
                 strokeDasharray="3 3"
               />
               <ReferenceLine
-                y = {data.length > 9 ? data[9].value: 0}
+                y={data.length > 9 ? data[9].value : 0}
                 stroke="gray"
                 strokeWidth={2}
                 strokeDasharray="4 4"
@@ -379,6 +392,25 @@ const BaseGameSolo = () => {
           )}
         </ResponsiveContainer>
       </div>
+
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={isBetweenDays.current}
+        message="Trading day ended."
+        slots={{ transition: Slide }}
+        slotProps={{
+          transition: {
+            direction: "left",
+          },
+        }}
+      >
+        <Alert
+          severity="warning"
+          sx={{ width: "400px", fontSize: "1.1rem", py: 2 }}
+        >
+          Larger Snackbar!
+        </Alert>
+      </Snackbar>
     </>
   );
 };
