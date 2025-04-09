@@ -15,6 +15,10 @@ import {
   CircularProgress,
   Slide,
   Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 
 import axios from "axios";
@@ -78,7 +82,10 @@ const BaseGameSolo = () => {
   const ticksGenerated = useRef<number>(0);
 
   // indicates whether we are in between trading days
-  const isBetweenDays = useRef<boolean>(false);
+  const [isBetweenDays, setIsBetweenDays] = useState<boolean>(false);
+
+  // indicates if summary window is open or not
+  const [openSummaryWindow, setOpenSummaryWindow] = useState<boolean>(false);
 
   const toggleDataGeneration = () => {
     setIsGeneratingData((prev) => !prev);
@@ -116,7 +123,8 @@ const BaseGameSolo = () => {
           ticksGenerated.current > 0 &&
           ticksGenerated.current % NUMTICKSPERDAY == 0
         ) {
-          isBetweenDays.current = true;
+          setIsBetweenDays(true);
+          handleEndOfDay();
         }
         console.log(ticksGenerated.current);
       } catch (error) {
@@ -192,6 +200,17 @@ const BaseGameSolo = () => {
     }
   };
 
+  const openSummary = () => {
+    setIsBetweenDays(false);
+    setOpenSummaryWindow(true);
+    document.removeEventListener("keydown", openSummary);
+  };
+
+  // handle end of trading day
+  const handleEndOfDay = () => {
+    document.addEventListener("keydown", openSummary);
+  };
+
   // when a new game gets created, register it
   useEffect(() => {
     if (gameId != "") {
@@ -234,7 +253,8 @@ const BaseGameSolo = () => {
         // end of trading day
         if (ticksGenerated.current % NUMTICKSPERDAY == 0) {
           setIsGeneratingData(false);
-          isBetweenDays.current = true;
+          setIsBetweenDays(true);
+          handleEndOfDay();
         }
       };
 
@@ -327,7 +347,7 @@ const BaseGameSolo = () => {
 
       <Button
         onClick={toggleDataGeneration}
-        disabled={gameId === "" || isResuming || isBetweenDays.current}
+        disabled={gameId === "" || isResuming || isBetweenDays}
       >
         {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
       </Button>
@@ -395,7 +415,7 @@ const BaseGameSolo = () => {
 
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        open={isBetweenDays.current}
+        open={isBetweenDays}
         message="Trading day ended."
         slots={{ transition: Slide }}
         slotProps={{
@@ -408,9 +428,17 @@ const BaseGameSolo = () => {
           severity="warning"
           sx={{ width: "400px", fontSize: "1.1rem", py: 2 }}
         >
-          Larger Snackbar!
+          Trading Day Ended. Press any key to continue to summary screen.
         </Alert>
       </Snackbar>
+
+      <Dialog open={openSummaryWindow}>
+        <DialogTitle>Summary of Trading Day</DialogTitle>
+        <DialogContent>Blah blah blah</DialogContent>
+        <DialogActions>
+          <Button>Next Day</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
