@@ -9,7 +9,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 
 import axios from "axios";
 
@@ -60,9 +60,19 @@ const BaseGameSolo = () => {
   // during this time, do not allow the user to pause the game again
   const [isResuming, setIsResuming] = useState<boolean>(false);
 
+  // indicates whether game is being set up (making a new game or loading previous data)
+  // when setting up, display a loading circle
+  const [isSettingUp, setIsSettingUp] = useState<boolean>(false);
+
   // min and max values genereated so far, used to scale the axis
   const minValue = useRef<number>(Infinity);
   const maxValue = useRef<number>(-Infinity);
+
+  // total number of ticks generated
+  const ticksGenerated = useRef<number>(0);
+
+  // indicates whether we are in between trading days
+  const isBetweenDays = useRef<boolean>(false);
 
   const toggleDataGeneration = () => {
     setIsGeneratingData((prev) => !prev);
@@ -71,15 +81,19 @@ const BaseGameSolo = () => {
   // creates a new base game
   const createNewBaseGame = async () => {
     const gameId = localStorage.getItem("gameId");
+    setIsSettingUp(true);
+
+    // game already exists, load it in
     if (gameId != null) {
       try {
         setGameId(gameId);
         const response = await axios.get(`${web_url}/get-game-manager/`);
-        const pastValues = response.data.game_manager[gameId].stock.past_values; 
+        const pastValues = response.data.game_manager[gameId].stock.past_values;
+        setIsSettingUp(false);
 
         // load in saved data from database
         let prevData: DataPoint[] = [];
-        pastValues.forEach((price: number) => {
+        for (const price of pastValues) {
           const newDataPoint: DataPoint = {
             time: prevData.length + 1 - 10,
             value: price,
@@ -87,12 +101,26 @@ const BaseGameSolo = () => {
           prevData.push(newDataPoint);
           minValue.current = Math.min(minValue.current, price);
           maxValue.current = Math.max(maxValue.current, price);
-        });
+          setData([...prevData]);
+        }
 
-        setData(prevData);
+        ticksGenerated.current = prevData.length - 10;
+
+        if (
+          ticksGenerated.current > 0 &&
+          ticksGenerated.current % NUMTICKSPERDAY == 0
+        ) {
+          isBetweenDays.current = true;
+        }
+        console.log(ticksGenerated.current);
       } catch (error) {
-        console.error("error getting game manager and loading previous data:", error);
+        console.error(
+          "error getting game manager and loading previous data:",
+          error
+        );
       }
+
+      // create a new game
     } else {
       try {
         const response = await axios.post(`${web_url}/create-base-game/`, {
@@ -100,8 +128,9 @@ const BaseGameSolo = () => {
           total_ticks: NUMTICKSPERDAY * NUMTRADINGDAYS,
         });
 
+        setIsSettingUp(false);
         let initialData: DataPoint[] = [];
-        response.data.initial_prices.forEach((price: number) => {
+        for (const price of response.data.initial_prices) {
           const newDataPoint: DataPoint = {
             time: initialData.length + 1 - 10,
             value: price,
@@ -109,9 +138,8 @@ const BaseGameSolo = () => {
           initialData.push(newDataPoint);
           minValue.current = Math.min(minValue.current, price);
           maxValue.current = Math.max(maxValue.current, price);
-        });
-
-        setData(initialData);
+          setData([...initialData]);
+        }
 
         setGameId(response.data.base_game.id);
         localStorage.setItem("gameId", response.data.base_game.id);
@@ -194,6 +222,14 @@ const BaseGameSolo = () => {
         lastTimestamp.current = currentTime;
         isPaused.current = false;
         timeInTick.current = 0;
+
+        ticksGenerated.current += 1;
+
+        // end of trading day
+        if (ticksGenerated.current % NUMTICKSPERDAY == 0) {
+          setIsGeneratingData(false);
+          isBetweenDays.current = true;
+        }
       };
 
       // handle resumption of game from when it was paused
@@ -253,6 +289,7 @@ const BaseGameSolo = () => {
     };
   }, [isGeneratingData]);
 
+  // initial setup
   useEffect(() => {
     // Check if we're in the browser environment
     if (typeof window !== "undefined") {
@@ -270,14 +307,21 @@ const BaseGameSolo = () => {
   return (
     <>
       <h1>
-        Current Price: {data.length >= 1 ? data[data.length - 1].value : 0}
+        Current Price:{" "}
+        {data.length >= 1 ? (
+          data[data.length - 1].value
+        ) : (
+          <CircularProgress size={20} />
+        )}
       </h1>
 
-      <h1>Game Id: {gameId}</h1>
+      <h1>
+        Game Id: {gameId !== "" ? gameId : <CircularProgress size={20} />}
+      </h1>
 
       <Button
         onClick={toggleDataGeneration}
-        disabled={gameId === "" || isResuming}
+        disabled={gameId === "" || isResuming || isBetweenDays.current}
       >
         {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
       </Button>
@@ -288,36 +332,51 @@ const BaseGameSolo = () => {
       </Button>
 
       <div style={{ width: "50%", height: 400 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="time"
-              type="number"
-              domain={["dataMin", "dataMax"]}
-            />
-            <YAxis
-              domain={[
-                Math.round(minValue.current * 0.9 * 100) / 100,
-                Math.round(maxValue.current * 1.1 * 100) / 100,
-              ]}
-            />
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          className="flex justify-center"
+        >
+          {isSettingUp ? (
+            <CircularProgress size={100} className="my-auto" />
+          ) : (
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="time"
+                type="number"
+                domain={["dataMin", "dataMax"]}
+                ticks = {[-9, -5, 0].concat(Array.from({length: Math.floor((data.length - 10) / 5) + 1}, (_, i) => i * 5)).concat([data.length - 10])}
+              />
+              <YAxis
+                domain={[
+                  Math.round(minValue.current * 0.9 * 100) / 100,
+                  Math.round(maxValue.current * 1.1 * 100) / 100,
+                ]}
+              />
 
-            {isGeneratingData ? <></> : <Tooltip />}
-            <Line
-              type="linear"
-              dataKey="value"
-              stroke="#000000"
-              dot={true}
-              isAnimationActive={false}
-            />
-            <ReferenceLine
-              x={0}
-              stroke="red"
-              strokeWidth={2}
-              strokeDasharray="3 3"
-            />
-          </LineChart>
+              {isGeneratingData ? <></> : <Tooltip />}
+              <Line
+                type="linear"
+                dataKey="value"
+                stroke="#000000"
+                dot={true}
+                isAnimationActive={false}
+              />
+              <ReferenceLine
+                x={0}
+                stroke="red"
+                strokeWidth={2}
+                strokeDasharray="3 3"
+              />
+              <ReferenceLine
+                y = {data.length > 9 ? data[9].value: 0}
+                stroke="gray"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+              />
+            </LineChart>
+          )}
         </ResponsiveContainer>
       </div>
     </>

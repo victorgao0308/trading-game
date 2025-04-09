@@ -47,7 +47,7 @@ const CreateGame = () => {
   const [numTradingDaysError, setNumTradingDaysError] = useState(false);
   const [numTradingDaysMessage, setNumTradingDaysMessage] = useState("");
 
-  const [numTicksPerDay, setNumTicksPerDay] = useState("60");
+  const [numTicksPerDay, setNumTicksPerDay] = useState("30");
   const [numTicksPerDayError, setNumTicksPerDayError] = useState(false);
   const [numTicksPerDayMessage, setNumTicksPerDayMessage] = useState("");
 
@@ -95,7 +95,7 @@ const CreateGame = () => {
     }
     else {
       setNumTradingDays("10");
-      setNumTicksPerDay("60");
+      setNumTicksPerDay("30");
       setTimeBetweenTicks("1.5");
       setStartingCash("1000");
       setVolatility("10");
@@ -208,9 +208,9 @@ const CreateGame = () => {
 
   const validateTimeBetweenTicks = () => {
     const val = parseFloat(timeBetweenTicks);
-    if (isNaN(val) || val < 0.1 || val > 5) {
+    if (isNaN(val) || val < 0.5 || val > 5) {
       setTimeBetweenTicksError(true);
-      setTimeBetweenTicksMessage("Enter a value 0.1 - 5");
+      setTimeBetweenTicksMessage("Enter a value 0.5 - 5");
     } else {
       setTimeBetweenTicksError(false);
       setTimeBetweenTicksMessage("");
@@ -509,7 +509,7 @@ const CreateGame = () => {
               <span>
                 Time Between Ticks (seconds)
                 <Tooltip
-                  title="Time (in seconds) between each stock tick. Enter a number 0.1 - 5."
+                  title="Time (in seconds) between each stock tick. Enter a number 0.5 - 5."
                   className="mb-0.5 ml-1"
                 >
                   <InfoOutline fontSize="small" />

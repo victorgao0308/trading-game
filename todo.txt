@@ -1,9 +1,10 @@
-add multiplier to stock values?
+add multiplier to stock values (for stocks that don't move much; could implement randomness/volatility here)
 create player object on game creation
 for solo mode, save all stock prices to avoid having to read the file every single time
 have a way to detect when stock price will rise / fall, and generate random events 
 have a way for days to end after numticks per day has passed (5 sec after last tick is generated, send user to next screen?)
 add color/symbols in price UI to indicate increases/decreases in price
+toggle on create game screen for toggling random events on/off
 
 for later days, first 5 - 10 points are the last 5 - 10 points of the day before
 
