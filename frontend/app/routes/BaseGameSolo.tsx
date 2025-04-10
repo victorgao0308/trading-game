@@ -87,6 +87,10 @@ const BaseGameSolo = () => {
   // indicates if summary window is open or not
   const [openSummaryWindow, setOpenSummaryWindow] = useState<boolean>(false);
 
+
+  // tracks current trading day
+  const [curTradingDay, setCurTradingDay] = useState<number>(1);
+
   const toggleDataGeneration = () => {
     setIsGeneratingData((prev) => !prev);
   };
@@ -101,8 +105,16 @@ const BaseGameSolo = () => {
       try {
         setGameId(gameId);
         const response = await axios.get(`${web_url}/get-game-manager/`);
-        const pastValues = response.data.game_manager[gameId].stock.past_values;
-        setIsSettingUp(false);
+        let pastValues = response.data.game_manager[gameId].stock.past_values;
+
+
+        const dayNumber = Math.floor((pastValues.length - 11)/ NUMTICKSPERDAY) + 1;
+        setCurTradingDay(dayNumber);
+        ticksGenerated.current = pastValues.length - 10;
+        const startingIndex = (dayNumber - 1) * NUMTICKSPERDAY;
+
+        pastValues = pastValues.slice(startingIndex);
+        // console.log(pastValues.slice(startingIndex));
 
         // load in saved data from database
         let prevData: DataPoint[] = [];
@@ -117,7 +129,7 @@ const BaseGameSolo = () => {
           setData([...prevData]);
         }
 
-        ticksGenerated.current = prevData.length - 10;
+        setIsSettingUp(false);
 
         if (
           ticksGenerated.current > 0 &&
@@ -201,7 +213,6 @@ const BaseGameSolo = () => {
   };
 
   const openSummary = () => {
-    setIsBetweenDays(false);
     setOpenSummaryWindow(true);
     document.removeEventListener("keydown", openSummary);
   };
@@ -315,6 +326,26 @@ const BaseGameSolo = () => {
     };
   }, [isGeneratingData]);
 
+
+
+  // handles going to next trading day
+  // gets 10 last data points from the previous day to use as the beginning 10 points and 
+  // updates meta information
+
+  const goToNextDay = () => {
+    setOpenSummaryWindow(false);
+
+    const lastTen = data.slice(-10);
+
+    for (let i = 0; i < 10; i++) {
+      lastTen[i].time = i - 9;
+    }
+
+    setCurTradingDay((prev) => prev + 1);
+    setData(lastTen);
+    setIsBetweenDays(false);
+  }
+
   // initial setup
   useEffect(() => {
     // Check if we're in the browser environment
@@ -343,6 +374,15 @@ const BaseGameSolo = () => {
 
       <h1>
         Game Id: {gameId !== "" ? gameId : <CircularProgress size={20} />}
+      </h1>
+
+
+      <h1>
+        Ticks Generated: {ticksGenerated.current}
+      </h1>
+
+      <h1>
+        Trading day {curTradingDay} of {NUMTRADINGDAYS}
       </h1>
 
       <Button
@@ -428,7 +468,7 @@ const BaseGameSolo = () => {
           severity="warning"
           sx={{ width: "400px", fontSize: "1.1rem", py: 2 }}
         >
-          Trading Day Ended. Press any key to continue to summary screen.
+          Trading day ended. Press any key to continue to the summary screen.
         </Alert>
       </Snackbar>
 
@@ -436,7 +476,7 @@ const BaseGameSolo = () => {
         <DialogTitle>Summary of Trading Day</DialogTitle>
         <DialogContent>Blah blah blah</DialogContent>
         <DialogActions>
-          <Button>Next Day</Button>
+          <Button onClick={goToNextDay}>Next Day</Button>
         </DialogActions>
       </Dialog>
     </>
