@@ -79,7 +79,7 @@ const BaseGameSolo = () => {
   const maxValue = useRef<number>(-Infinity);
 
   // total number of ticks generated
-  const ticksGenerated = useRef<number>(0);
+  const ticksGenerated = useRef<number>(-1);
 
   // indicates whether we are in between trading days
   const [isBetweenDays, setIsBetweenDays] = useState<boolean>(false);
@@ -87,9 +87,8 @@ const BaseGameSolo = () => {
   // indicates if summary window is open or not
   const [openSummaryWindow, setOpenSummaryWindow] = useState<boolean>(false);
 
-
   // tracks current trading day
-  const [curTradingDay, setCurTradingDay] = useState<number>(1);
+  const [curTradingDay, setCurTradingDay] = useState<number>(-1);
 
   const toggleDataGeneration = () => {
     setIsGeneratingData((prev) => !prev);
@@ -107,8 +106,10 @@ const BaseGameSolo = () => {
         const response = await axios.get(`${web_url}/get-game-manager/`);
         let pastValues = response.data.game_manager[gameId].stock.past_values;
 
-
-        const dayNumber = Math.floor((pastValues.length - 11)/ NUMTICKSPERDAY) + 1;
+        const dayNumber = Math.max(
+          Math.floor((pastValues.length - 11) / NUMTICKSPERDAY) + 1,
+          1
+        );
         setCurTradingDay(dayNumber);
         ticksGenerated.current = pastValues.length - 10;
         const startingIndex = (dayNumber - 1) * NUMTICKSPERDAY;
@@ -120,16 +121,27 @@ const BaseGameSolo = () => {
         let prevData: DataPoint[] = [];
         for (const price of pastValues) {
           const newDataPoint: DataPoint = {
-            time: prevData.length + 1 - 10,
+            time: prevData.length + 1 - 10 + (dayNumber - 1) * NUMTICKSPERDAY,
             value: price,
           };
           prevData.push(newDataPoint);
           minValue.current = Math.min(minValue.current, price);
           maxValue.current = Math.max(maxValue.current, price);
-          setData([...prevData]);
         }
 
+        setData(prevData);
+
         setIsSettingUp(false);
+
+        const a = Array.from(
+          {
+            length: Math.ceil(
+              (prevData[prevData.length - 1].time - prevData[9].time) / 5
+            ),
+          },
+          (_, i) => prevData[9].time + i * 5
+        );
+        console.log(a);
 
         if (
           ticksGenerated.current > 0 &&
@@ -164,11 +176,13 @@ const BaseGameSolo = () => {
           initialData.push(newDataPoint);
           minValue.current = Math.min(minValue.current, price);
           maxValue.current = Math.max(maxValue.current, price);
-          setData([...initialData]);
         }
+        setData(initialData);
 
         setGameId(response.data.base_game.id);
         localStorage.setItem("gameId", response.data.base_game.id);
+        ticksGenerated.current = 0;
+        setCurTradingDay(1);
       } catch (error) {
         console.error("Error posting data:", error);
       }
@@ -250,7 +264,7 @@ const BaseGameSolo = () => {
         maxValue.current = Math.max(maxValue.current, next_price);
         setData((prevData) => {
           const newPoint: DataPoint = {
-            time: prevData.length + 1 - 10,
+            time: prevData.length + 1 - 10 + (curTradingDay - 1) * NUMTICKSPERDAY,
             value: next_price,
           };
           return [...prevData, newPoint];
@@ -326,10 +340,8 @@ const BaseGameSolo = () => {
     };
   }, [isGeneratingData]);
 
-
-
   // handles going to next trading day
-  // gets 10 last data points from the previous day to use as the beginning 10 points and 
+  // gets 10 last data points from the previous day to use as the beginning 10 points and
   // updates meta information
 
   const goToNextDay = () => {
@@ -338,13 +350,13 @@ const BaseGameSolo = () => {
     const lastTen = data.slice(-10);
 
     for (let i = 0; i < 10; i++) {
-      lastTen[i].time = i - 9;
+      lastTen[i].time = i - 9 + (curTradingDay) * NUMTICKSPERDAY;
     }
 
     setCurTradingDay((prev) => prev + 1);
     setData(lastTen);
     setIsBetweenDays(false);
-  }
+  };
 
   // initial setup
   useEffect(() => {
@@ -376,13 +388,20 @@ const BaseGameSolo = () => {
         Game Id: {gameId !== "" ? gameId : <CircularProgress size={20} />}
       </h1>
 
-
       <h1>
-        Ticks Generated: {ticksGenerated.current}
+        Ticks Generated:{" "}
+        {ticksGenerated.current != -1 ? (
+          ticksGenerated.current
+        ) : (
+          <CircularProgress size={20} />
+        )}
       </h1>
 
       <h1>
-        Trading day {curTradingDay} of {NUMTRADINGDAYS}
+        Trading Day{" "}
+        {curTradingDay != -1 ? curTradingDay : <CircularProgress size={20} />}{" "}
+        of{" "}
+        {NUMTRADINGDAYS != -1 ? NUMTRADINGDAYS : <CircularProgress size={20} />}
       </h1>
 
       <Button
@@ -412,15 +431,31 @@ const BaseGameSolo = () => {
                 dataKey="time"
                 type="number"
                 domain={["dataMin", "dataMax"]}
-                ticks={[-9, -5, 0]
-                  .concat(
-                    Array.from(
-                      { length: Math.floor((data.length - 10) / 5) + 1 },
-                      (_, i) => i * 5
-                    )
-                  )
-                  .concat([data.length - 10])}
+                ticks={
+                  data.length > 9
+                    ? [
+                        -9 + (curTradingDay - 1) * NUMTICKSPERDAY,
+                        -5 + (curTradingDay - 1) * NUMTICKSPERDAY,
+                      ]
+                        .concat(
+                          Array.from(
+                            {
+                              length: Math.ceil(
+                                (data[data.length - 1].time - data[9].time) / 5
+                              ),
+                            },
+                            (_, i) => data[9].time + i * 5
+                          )
+                        )
+                        .concat([
+                          data.length -
+                            10 +
+                            (curTradingDay - 1) * NUMTICKSPERDAY,
+                        ])
+                    : []
+                }
               />
+
               <YAxis
                 domain={[
                   Math.round(minValue.current * 0.9 * 100) / 100,
@@ -437,7 +472,7 @@ const BaseGameSolo = () => {
                 isAnimationActive={false}
               />
               <ReferenceLine
-                x={0}
+                x={(curTradingDay - 1) * NUMTICKSPERDAY}
                 stroke="red"
                 strokeWidth={2}
                 strokeDasharray="3 3"
