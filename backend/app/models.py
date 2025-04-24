@@ -40,6 +40,13 @@ class GameManager():
                 return 0
             except ObjectDoesNotExist:
                 return -2
+            
+    def remove_game(self, game_id):
+        if game_id not in self.games:
+            return -1
+        
+        del self.games[game_id]
+        return 0
         
     def get_game(self, game_id):
         if game_id not in self.games:

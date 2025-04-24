@@ -98,7 +98,6 @@ const BaseGameSolo = () => {
   const createNewBaseGame = async () => {
     const gameId = localStorage.getItem("gameId");
     setIsSettingUp(true);
-
     // game already exists, load it in
     if (gameId != null) {
       try {
@@ -228,6 +227,7 @@ const BaseGameSolo = () => {
 
   const openSummary = () => {
     setOpenSummaryWindow(true);
+    setIsBetweenDays(false);
     document.removeEventListener("keydown", openSummary);
   };
 
@@ -264,7 +264,8 @@ const BaseGameSolo = () => {
         maxValue.current = Math.max(maxValue.current, next_price);
         setData((prevData) => {
           const newPoint: DataPoint = {
-            time: prevData.length + 1 - 10 + (curTradingDay - 1) * NUMTICKSPERDAY,
+            time:
+              prevData.length + 1 - 10 + (curTradingDay - 1) * NUMTICKSPERDAY,
             value: next_price,
           };
           return [...prevData, newPoint];
@@ -350,12 +351,11 @@ const BaseGameSolo = () => {
     const lastTen = data.slice(-10);
 
     for (let i = 0; i < 10; i++) {
-      lastTen[i].time = i - 9 + (curTradingDay) * NUMTICKSPERDAY;
+      lastTen[i].time = i - 9 + curTradingDay * NUMTICKSPERDAY;
     }
 
     setCurTradingDay((prev) => prev + 1);
     setData(lastTen);
-    setIsBetweenDays(false);
   };
 
   // initial setup

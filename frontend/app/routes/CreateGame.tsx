@@ -1,8 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button, Paper } from "@mui/material";
 import { ArrowBack, ArrowForward, InfoOutline } from "@mui/icons-material";
-import { Divider, TextField, Tooltip } from "@mui/material";
+import {
+  Divider,
+  TextField,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
 
@@ -13,6 +21,10 @@ const descriptions = [
   "Base game where you trade against bots. Stock prices are derived from historical stock prices, random in-game events, and current supply/demand. You are able to create various types of buy/sell orders, and trades are only executed when orders can be fulfilled.",
   "c",
 ];
+
+import axios from "axios";
+
+import web_url from "web-url";
 
 const CreateGame = () => {
   const games = Object.freeze({
@@ -63,7 +75,15 @@ const CreateGame = () => {
   const [volatilityError, setVolatilityError] = useState(false);
   const [volatilityMessage, setVolatilityMessage] = useState("");
 
+  // indicates whether a game already exists or not
+  const [existingGame, setExistingGame] = useState(false);
+
+  const gameSetup = useRef<any>({});
+
   const [seed, setSeed] = useState("");
+
+  // holds previous game object
+  const [prevGame, setPrevGame] = useState<any>({stock: {}});
 
   // handlers for scrolling left/right on game type
   const handlePrevious = () => {
@@ -92,8 +112,7 @@ const CreateGame = () => {
       setVolatility("1");
       setSeed("");
       setIsLoaded(true);
-    }
-    else {
+    } else {
       setNumTradingDays("10");
       setNumTicksPerDay("30");
       setTimeBetweenTicks("1.5");
@@ -279,16 +298,8 @@ const CreateGame = () => {
       return;
     }
 
-    let gameSetup: {
-      gameType: number;
-      numTradingDays: string;
-      numTicksPerDay: string;
-      timeBetweenTicks: string;
-      startingCash: string;
-      volatility: string;
-      seed: string;
-      [key: string]: any;
-    } = {
+
+    gameSetup.current = {
       gameType: selectedIndex,
       numTradingDays,
       numTicksPerDay,
@@ -299,17 +310,54 @@ const CreateGame = () => {
     };
 
     if (selectedIndex == games.BASE_GAME_REGULAR) {
-      gameSetup.numBots = numBots;
-      gameSetup.numMM = numMM;
+      gameSetup.current.numBots = numBots;
+      gameSetup.current.numMM = numMM;
     }
 
-    localStorage.setItem("gameSetup", JSON.stringify(gameSetup));
+    // try to load in a previous game, if one exists
+    const getPrevGame = async () => {
+      const prevGameId = localStorage.getItem("gameId") || "";
+      const response = await axios.get(`${web_url}/get-game-manager/`);
+
+      const prevGame = response.data.game_manager[prevGameId];
+
+      if (prevGame) {
+        setExistingGame(true);
+        setPrevGame(prevGame);
+        console.log(prevGame);
+      } else {
+        localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
+        localStorage.removeItem("gameId");
+
+        if (selectedIndex == games.BASE_GAME_SOLO) {
+          navigate("/game");
+        }
+      }
+    };
+    getPrevGame();
+  };
+
+  // load in previous game
+  const loadPrevGame = () => {
+    if (selectedIndex == games.BASE_GAME_SOLO) {
+      navigate("/game");
+    }
+  }
+
+
+  // create new game
+  const createNewGame = async () => {
+    const response = await axios.delete(`${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`);
+
+    console.log(response);
+
+    localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
     localStorage.removeItem("gameId");
 
     if (selectedIndex == games.BASE_GAME_SOLO) {
       navigate("/game");
     }
-  };
+  }
 
   return (
     <div className="flex justify-center items-center my-12 ">
@@ -639,6 +687,31 @@ const CreateGame = () => {
           <></>
         )}
       </Paper>
+
+      <Dialog open={existingGame}>
+        <DialogTitle>Previous Game Found</DialogTitle>
+        <DialogContent>
+          A previous game has been found: <br />
+          <Divider
+            className="w-full font-bold !my-2"
+            variant="fullWidth"
+          ></Divider>
+          Type: {prevGame.type} <br />
+          ID: {prevGame.id} <br />
+          Ticks Generated: {prevGame.stock.ticks_generated || ""} <br />
+          Current Stock Price: ${prevGame.stock.current_price} <br />
+          Player Total Assets: 0 (TO DO) <br />
+          <Divider
+            className="w-full font-bold !my-2"
+            variant="fullWidth"
+          ></Divider>
+          Reload the preivous game, or create a new one?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={loadPrevGame}>Load Previous Game</Button>
+          <Button onClick={createNewGame}>Create New Game</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

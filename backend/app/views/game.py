@@ -113,6 +113,25 @@ def register_base_game(request, game_id):
             },status=status.HTTP_200_OK)
     
 
+# removes game from game manager
+@api_view(['DELETE'])
+def remove_game_from_manager(request, game_id):
+    manager = GameManager()
+    ret = manager.remove_game(game_id)
+    if (ret == -1):
+        return Response({
+            "note": f"Game with id {game_id} does not exist in game manager",
+            "game_id" : game_id
+            },status=status.HTTP_400_BAD_REQUEST)
+    
+    if (ret == 0):
+        return Response({
+            "success": f"Base game with id {game_id} removed from game manager successfully",
+            "game_id" : game_id,
+            "game_manager" : manager.games
+            },status=status.HTTP_200_OK)
+    
+
 @api_view(['GET'])
 def get_next_base_game_price_solo(request, game_id):
     price = getNextPriceSolo(game_id)
