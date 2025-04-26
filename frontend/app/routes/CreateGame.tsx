@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Button, Paper } from "@mui/material";
-import { ArrowBack, ArrowForward, InfoOutline } from "@mui/icons-material";
+import {
+  ArrowBack,
+  ArrowForward,
+  InfoOutline,
+  Close,
+} from "@mui/icons-material";
 import {
   Divider,
   TextField,
@@ -83,7 +88,7 @@ const CreateGame = () => {
   const [seed, setSeed] = useState("");
 
   // holds previous game object
-  const [prevGame, setPrevGame] = useState<any>({stock: {}});
+  const [prevGame, setPrevGame] = useState<any>({ stock: {} });
 
   // handlers for scrolling left/right on game type
   const handlePrevious = () => {
@@ -100,6 +105,10 @@ const CreateGame = () => {
     setSelectedIndex((prevIndex) =>
       prevIndex < gameModes.length - 1 ? prevIndex + 1 : 0
     );
+  };
+
+  const handleCloseDialog = () => {
+    setExistingGame(false);
   };
 
   // set game parameters
@@ -298,7 +307,6 @@ const CreateGame = () => {
       return;
     }
 
-
     gameSetup.current = {
       gameType: selectedIndex,
       numTradingDays,
@@ -324,7 +332,6 @@ const CreateGame = () => {
       if (prevGame) {
         setExistingGame(true);
         setPrevGame(prevGame);
-        console.log(prevGame);
       } else {
         localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
         localStorage.removeItem("gameId");
@@ -339,15 +346,19 @@ const CreateGame = () => {
 
   // load in previous game
   const loadPrevGame = () => {
-    if (selectedIndex == games.BASE_GAME_SOLO) {
+    const gameType = JSON.parse(
+      localStorage.getItem("gameSetup") || ""
+    ).gameType;
+    if (gameType == 1) {
       navigate("/game");
     }
-  }
-
+  };
 
   // create new game
   const createNewGame = async () => {
-    const response = await axios.delete(`${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`);
+    const response = await axios.delete(
+      `${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`
+    );
 
     console.log(response);
 
@@ -357,7 +368,7 @@ const CreateGame = () => {
     if (selectedIndex == games.BASE_GAME_SOLO) {
       navigate("/game");
     }
-  }
+  };
 
   return (
     <div className="flex justify-center items-center my-12 ">
@@ -688,29 +699,45 @@ const CreateGame = () => {
         )}
       </Paper>
 
-      <Dialog open={existingGame}>
-        <DialogTitle>Previous Game Found</DialogTitle>
-        <DialogContent>
-          A previous game has been found: <br />
-          <Divider
-            className="w-full font-bold !my-2"
-            variant="fullWidth"
-          ></Divider>
-          Type: {prevGame.type} <br />
-          ID: {prevGame.id} <br />
-          Ticks Generated: {prevGame.stock.ticks_generated || ""} <br />
-          Current Stock Price: ${prevGame.stock.current_price} <br />
-          Player Total Assets: 0 (TO DO) <br />
-          <Divider
-            className="w-full font-bold !my-2"
-            variant="fullWidth"
-          ></Divider>
-          Reload the preivous game, or create a new one?
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={loadPrevGame}>Load Previous Game</Button>
-          <Button onClick={createNewGame}>Create New Game</Button>
-        </DialogActions>
+      <Dialog
+        open={existingGame}
+        onClose={handleCloseDialog}
+        disableEnforceFocus
+      >
+        <div className="relative">
+          <button
+            onClick={(e) => {
+              e.currentTarget.blur();
+              handleCloseDialog();
+            }}
+            aria-label="Close dialog"
+            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <Close />
+          </button>
+          <DialogTitle>Previous Game Found</DialogTitle>
+          <DialogContent>
+            A previous game has been found: <br />
+            <Divider
+              className="w-full font-bold !my-2"
+              variant="fullWidth"
+            ></Divider>
+            Type: {prevGame.type} <br />
+            ID: {prevGame.id} <br />
+            Ticks Generated: {prevGame.stock.ticks_generated || ""} <br />
+            Current Stock Price: ${prevGame.stock.current_price} <br />
+            Player Total Assets: 0 (TO DO) <br />
+            <Divider
+              className="w-full font-bold !my-2"
+              variant="fullWidth"
+            ></Divider>
+            Load the preivous game, or create a new one?
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={loadPrevGame}>Load Previous Game</Button>
+            <Button onClick={createNewGame}>Create New Game</Button>
+          </DialogActions>
+        </div>
       </Dialog>
     </div>
   );

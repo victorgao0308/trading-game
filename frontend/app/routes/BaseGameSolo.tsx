@@ -398,6 +398,20 @@ const BaseGameSolo = () => {
       </h1>
 
       <h1>
+        Time Between Ticks:{" "}
+        {TIMEBETWEENTICKS != -1 ? (
+          TIMEBETWEENTICKS / 1000 + " second(s)"
+        ) : (
+          <CircularProgress size={20} />
+        )}
+      </h1>
+
+      <h1>
+        Ticks Per Day:{" "}
+        {NUMTICKSPERDAY != -1 ? NUMTICKSPERDAY : <CircularProgress size={20} />}
+      </h1>
+
+      <h1>
         Trading Day{" "}
         {curTradingDay != -1 ? curTradingDay : <CircularProgress size={20} />}{" "}
         of{" "}
@@ -411,10 +425,6 @@ const BaseGameSolo = () => {
         {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
       </Button>
 
-      <Button onClick={createNewBaseGame} disabled={gameId !== ""}>
-        {" "}
-        create new base game
-      </Button>
 
       <div style={{ width: "50%", height: 400 }}>
         <ResponsiveContainer
