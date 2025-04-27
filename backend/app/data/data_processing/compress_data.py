@@ -2,7 +2,7 @@ import pandas as pd
 from decimal import Decimal, ROUND_HALF_UP
 import math
 from bitarray import bitarray
-
+import os
 
 
 # removes all columns except for CLOSE
@@ -85,7 +85,7 @@ def compress_data(fileName):
 
 
 def uncompress_data(fileName):
-    filePath = f'../compressed_data/{fileName}.bin'
+    filePath = f'app/data/compressed_data/{fileName}'
     ba = bitarray()
     with open(filePath, 'rb') as f:
         ba.fromfile(f)
@@ -127,8 +127,13 @@ def uncompress_data(fileName):
         i += bits_to_read - 1
         prices.append(prices[-1] + diff / 100)
 
-    print(prices, len(prices))
+    return prices
 
-process_data("aapl.us.txt")
-compress_data("aapl.us.txt")
-uncompress_data("aapl.us.txt")
+
+# process_data("aapl.us.txt")
+# compress_data("aapl.us.txt")
+# uncompress_data("aapl.us.txt")
+
+# files = [f for f in os.listdir("../raw_data") if os.path.isfile(os.path.join("../raw_data", f))]
+# for f in files:
+#     compress_data(f)

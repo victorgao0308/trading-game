@@ -1,14 +1,4 @@
-'''
-calculates and returns the price of a given stock
-
-
-eventually, will use real-world data, current supply/demand, and random events to do so
-'''
-from decimal import Decimal, ROUND_DOWN
-import random
 from ..models import GameManager
-import os
-import pandas as pd
 
 '''
 Gets next price in solo mode.
@@ -30,14 +20,9 @@ def getNextPriceSolo(game_id):
     if stock == None:
         return -1
 
-    df = pd.read_csv(stock.underlying_stock)
-    index = stock.first_tick_index - stock.ticks_generated
-    new_price = df.at[index, "Price"]
+    new_price = stock.next_values[stock.ticks_generated]
 
-    new_price = Decimal(new_price[1:])
-
-    # ensure rounding to 2 decimal places
-    stock.current_price = new_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+    stock.current_price = new_price
 
     stock.ticks_generated += 1
 

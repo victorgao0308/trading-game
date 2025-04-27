@@ -64,7 +64,7 @@ const CreateGame = () => {
   const [numTradingDaysError, setNumTradingDaysError] = useState(false);
   const [numTradingDaysMessage, setNumTradingDaysMessage] = useState("");
 
-  const [numTicksPerDay, setNumTicksPerDay] = useState("30");
+  const [numTicksPerDay, setNumTicksPerDay] = useState("20");
   const [numTicksPerDayError, setNumTicksPerDayError] = useState(false);
   const [numTicksPerDayMessage, setNumTicksPerDayMessage] = useState("");
 
@@ -115,7 +115,7 @@ const CreateGame = () => {
   useEffect(() => {
     if (selectedIndex == games.TUTORIAL) {
       setNumTradingDays("3");
-      setNumTicksPerDay("30");
+      setNumTicksPerDay("20");
       setTimeBetweenTicks("1");
       setStartingCash("1500");
       setVolatility("1");
@@ -123,7 +123,7 @@ const CreateGame = () => {
       setIsLoaded(true);
     } else {
       setNumTradingDays("10");
-      setNumTicksPerDay("30");
+      setNumTicksPerDay("20");
       setTimeBetweenTicks("1.5");
       setStartingCash("1000");
       setVolatility("10");
@@ -724,7 +724,7 @@ const CreateGame = () => {
             ></Divider>
             Type: {prevGame.type} <br />
             ID: {prevGame.id} <br />
-            Ticks Generated: {prevGame.stock.ticks_generated || ""} <br />
+            Ticks Generated: {prevGame.stock.ticks_generated} <br />
             Current Stock Price: ${prevGame.stock.current_price} <br />
             Player Total Assets: 0 (TO DO) <br />
             <Divider
