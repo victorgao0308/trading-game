@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  TextField,
 } from "@mui/material";
 
 import axios from "axios";
@@ -27,7 +28,7 @@ import web_url from "web-url";
 
 interface DataPoint {
   time: number;
-  value: number;
+  value: string;
 }
 
 // global game variables
@@ -112,16 +113,14 @@ const BaseGameSolo = () => {
         setCurTradingDay(dayNumber);
         ticksGenerated.current = pastValues.length - 10;
         const startingIndex = (dayNumber - 1) * NUMTICKSPERDAY;
-
         pastValues = pastValues.slice(startingIndex);
-        // console.log(pastValues.slice(startingIndex));
 
         // load in saved data from database
         let prevData: DataPoint[] = [];
         for (const price of pastValues) {
           const newDataPoint: DataPoint = {
             time: prevData.length + 1 - 10 + (dayNumber - 1) * NUMTICKSPERDAY,
-            value: price,
+            value: price.toFixed(2),
           };
           prevData.push(newDataPoint);
           minValue.current = Math.min(minValue.current, price);
@@ -132,16 +131,6 @@ const BaseGameSolo = () => {
 
         setIsSettingUp(false);
 
-        const a = Array.from(
-          {
-            length: Math.ceil(
-              (prevData[prevData.length - 1].time - prevData[9].time) / 5
-            ),
-          },
-          (_, i) => prevData[9].time + i * 5
-        );
-        console.log(a);
-
         if (
           ticksGenerated.current > 0 &&
           ticksGenerated.current % NUMTICKSPERDAY == 0
@@ -149,7 +138,6 @@ const BaseGameSolo = () => {
           setIsBetweenDays(true);
           handleEndOfDay();
         }
-        console.log(ticksGenerated.current);
       } catch (error) {
         console.error(
           "error getting game manager and loading previous data:",
@@ -170,7 +158,7 @@ const BaseGameSolo = () => {
         for (const price of response.data.initial_prices) {
           const newDataPoint: DataPoint = {
             time: initialData.length + 1 - 10,
-            value: price,
+            value: price.toFixed(2),
           };
           initialData.push(newDataPoint);
           minValue.current = Math.min(minValue.current, price);
@@ -266,7 +254,7 @@ const BaseGameSolo = () => {
           const newPoint: DataPoint = {
             time:
               prevData.length + 1 - 10 + (curTradingDay - 1) * NUMTICKSPERDAY,
-            value: next_price,
+            value: next_price.toFixed(2),
           };
           return [...prevData, newPoint];
         });
@@ -375,10 +363,33 @@ const BaseGameSolo = () => {
 
   return (
     <>
+      <div className="absolute right-0 w-1/3 h-1/2 border-1">
+        recent transactions
+      </div>
+
+      <div className="absolute left-1/2 w-1/7">
+        <h1>
+          Cash:{" "}
+          {CASH != -1 ? "$" + CASH.toFixed(2) : <CircularProgress size={20} />}
+        </h1>
+        <h1>Stocks Owned: 0</h1>
+        
+        <div className="mt-32 flex flex-col space-y-4">
+          <div className="flex justify-between items-center w-full mb-1">
+            <h1>Buy Stock</h1>
+            <TextField className="w-20" size="small" label="Qty"/>
+          </div>
+          <div className="flex justify-between items-center w-full mb-1">
+            <h1>Sell Stock</h1>
+            <TextField className="w-20" size="small" label="Qty"/>
+          </div>
+        </div>
+      </div>
+
       <h1>
         Current Price:{" "}
         {data.length >= 1 ? (
-          data[data.length - 1].value
+          "$" + data[data.length - 1].value
         ) : (
           <CircularProgress size={20} />
         )}
@@ -425,8 +436,7 @@ const BaseGameSolo = () => {
         {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
       </Button>
 
-
-      <div style={{ width: "50%", height: 400 }}>
+      <div style={{ width: "47.5%", height: 400 }}>
         <ResponsiveContainer
           width="100%"
           height="100%"
@@ -471,6 +481,7 @@ const BaseGameSolo = () => {
                   Math.round(minValue.current * 0.9 * 100) / 100,
                   Math.round(maxValue.current * 1.1 * 100) / 100,
                 ]}
+                tickFormatter={(value) => value.toFixed(2)}
               />
 
               {isGeneratingData ? <></> : <Tooltip />}

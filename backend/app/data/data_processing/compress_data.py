@@ -4,7 +4,6 @@ import math
 from bitarray import bitarray
 import os
 
-
 # removes all columns except for CLOSE
 def process_data(fileName):
     filePath = f'../raw_data/{fileName}'
@@ -18,6 +17,7 @@ def process_data(fileName):
 
 # compresses file down
 # check _FORMAT.md inside of compressed_data/ for how the compression works
+# returns 
 def compress_data(fileName):
     filePath = f'../raw_data/{fileName}'
 
@@ -84,7 +84,8 @@ def compress_data(fileName):
         ba.tofile(f)
 
 
-def uncompress_data(fileName):
+# uncompresses a compressed file; returns an array of numPoints values starting at index start
+def uncompress_data(fileName, start, numPoints):
     filePath = f'app/data/compressed_data/{fileName}'
     ba = bitarray()
     with open(filePath, 'rb') as f:
@@ -97,27 +98,41 @@ def uncompress_data(fileName):
 
     ba = ba[3:len(ba) - offset]
 
+
+    # number of lines
+    lines = int(ba[:16], 2)
+    ba = ba[16:]
+
     prices = []
 
-    # read in initial value
-    initial_value = Decimal(str(int(ba[:27], 2) / 100)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-    prices.append(initial_value)
+    # read in initial value
+    prev_value = Decimal(str(int(ba[:27], 2) / 100)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    num_processed = 1
+
+    if start == 0:
+        prices.append(prev_value)
+
     # current index
     i = 27
 
     while i < len(ba):
+        if len(prices) >= numPoints:
+            break
 
         bits_to_read = int(ba[i: i + 5], 2)
         i += 5
 
+        num_processed += 1
+
         # no change in price, continue
         if bits_to_read == 0:
-            prices.append(prices[-1])
+            if num_processed >= start:
+                prices.append(prev_value)
             continue
 
         # read in bit for positive/negative change
-        bit_sign = ba[i : i + 1]
+        bit_sign = ba[i]
         i += 1
         sign = -1 if bit_sign == "0" else 1
 
@@ -125,8 +140,11 @@ def uncompress_data(fileName):
         # add the 1 back in 
         diff = Decimal(str(sign * int("1" + ba[i : i + bits_to_read - 1], 2))).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         i += bits_to_read - 1
-        prices.append(prices[-1] + diff / 100)
 
+        if num_processed >= start:
+            prices.append(prev_value + diff / 100)
+
+        prev_value = prev_value + diff / 100
     return prices
 
 
@@ -134,6 +152,7 @@ def uncompress_data(fileName):
 # compress_data("aapl.us.txt")
 # uncompress_data("aapl.us.txt")
 
-# files = [f for f in os.listdir("../raw_data") if os.path.isfile(os.path.join("../raw_data", f))]
-# for f in files:
-#     compress_data(f)
+# files = [f for f in os.listdir("app/data/compressed_data") if os.path.isfile(os.path.join("app/data/compressed_data", f))]
+
+
+

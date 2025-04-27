@@ -1,19 +1,19 @@
-for solo mode, save all stock prices to avoid having to read the file every single time
-read data from compresssed files
-
-
 add multiplier to stock values (for stocks that don't move much; could implement randomness/volatility here)
 create player object on game creation
 add color/symbols in price UI to indicate increases/decreases in price
 toggle on create game screen for toggling random events on/off
 
 
+encode number of data points inside of binary file?? (terminate uncompression earlier)
+
+
+prevent mobile from accessing game (or change UI on mobile?)
+
 work on solo mode
     endpoint to buy stock & sell stock
     when reloading a game, undo events up until the last tick
 
 
-get better stock data????
 
 have tutorial emcompass regular mode as well (or separate tutorials for separet gamemodes?)
 

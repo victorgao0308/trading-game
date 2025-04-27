@@ -1,13 +1,9 @@
-from decimal import Decimal, ROUND_DOWN
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from ..models import Stock
 import random
 import json
 import os
-import pandas as pd
 from app.data.data_processing.compress_data import uncompress_data
+from bitarray import bitarray
 
 
 def create_stock(seed, total_ticks):
@@ -30,19 +26,34 @@ def create_stock(seed, total_ticks):
 
     stock.underlying_stock = underlying_stock[:-11]
 
-    prices = uncompress_data(underlying_stock)
+
+    # read in the number of entries in this file
+    filePath = f'app/data/compressed_data/{underlying_stock}'
+    ba = bitarray()
+    with open(filePath, 'rb') as f:
+        ba.fromfile(f)
+
+    ba = ba.to01()
 
 
-    # make sure we have enough points to generate data for
-    # total data points needed is total_ticks
-    # save space to generate 10 initial points
+    # number of data points
+    points = int(ba[3:19], 2)
 
-    start_index = random.randint(0, len(prices) - total_ticks - 11)
-    initial_prices = prices[start_index:start_index + 10]
+
+    # pick a random place within the file to act as the starting  point
+    start_index = random.randint(0, points - total_ticks - 11)
+
+    # get data points
+    prices = uncompress_data(underlying_stock, start_index, total_ticks + 10)
+
+
+    # set initial prices
+    initial_prices = prices[:10]
 
     stock.first_tick_index = start_index
     stock.ticks_generated = 0
-    stock.next_values = prices[start_index + 10 : start_index + 10 + total_ticks]
+    stock.next_values = prices[10:]
+    stock.past_values = initial_prices
 
     stock.current_price = initial_prices[-1]
     stock.stock_name = data["stock_name"]

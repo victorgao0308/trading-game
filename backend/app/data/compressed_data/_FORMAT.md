@@ -4,6 +4,8 @@ Initial price and change in prices are stored with cents as the denomination
 
 3 bits to store the offset of the file (file size must be multiple of 8 bits, this specifies how many bits at the end are padding)
 
+16 bits to store # of entries in this file (max 65,536 entries)
+
 27 bits to store initial price (max initial price that can be stored is 134217727 cents, $1,342,177.27)
 
 Then, for each subsequent entry:
