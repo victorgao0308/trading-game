@@ -359,9 +359,7 @@ const CreateGame = () => {
     const response = await axios.delete(
       `${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`
     );
-
-    console.log(response);
-
+    
     localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
     localStorage.removeItem("gameId");
 

@@ -25,6 +25,7 @@ import {
 import axios from "axios";
 
 import web_url from "web-url";
+import { ConnectingAirportsOutlined } from "@mui/icons-material";
 
 interface DataPoint {
   time: number;
@@ -41,7 +42,7 @@ let SEED: string = "";
 
 const FAKEDATA: DataPoint[] = [];
 
-const BaseGameSolo = () => {
+const BaseGame = () => {
   // array to hold price of stock
   const [data, setData] = useState<DataPoint[]>(FAKEDATA);
   const [gameId, setGameId] = useState<String>("");
@@ -91,8 +92,36 @@ const BaseGameSolo = () => {
   // tracks current trading day
   const [curTradingDay, setCurTradingDay] = useState<number>(-1);
 
+  // stock broker text
+  const [brokerText, setBrokerText] = useState<string>("");
+
+  // current broker mode, either "Buy" or "Sell"
+  // default is "Buy"
+  const [brokerMode, setBrokerMode] = useState<string>("Buy");
+
+  // flag to indicate if broker event listener is added
+  const brokerListenerAdded = useRef(false);
+
+  // background color of the broker
+  // contains a tailwind class name
+  const [brokerBackgroundColor, setBrokerBackgroundColor] =
+    useState<string>("");
+
+  // toggle generation of data
+  // if toggling on, add event listener
   const toggleDataGeneration = () => {
-    setIsGeneratingData((prev) => !prev);
+    setIsGeneratingData((prev) => {
+      if (!prev) {
+        if (!brokerListenerAdded.current) {
+          document.addEventListener("keydown", handleBrokerText);
+          brokerListenerAdded.current = true;
+        } else {
+          document.removeEventListener("keydown", handleBrokerText);
+          brokerListenerAdded.current = false;
+        }
+      }
+      return !prev;
+    });
   };
 
   // creates a new base game
@@ -361,6 +390,58 @@ const BaseGameSolo = () => {
     }
   }, []);
 
+  // handle broker text
+  const handleBrokerText = (e: any) => {
+    // complete transaction
+    // only execute transaction if there is text in the broker
+    if (e.key === "Enter") {
+      setBrokerText((prev) => {
+        if (prev.length > 0) {
+          setBrokerBackgroundColor("bg-yellow-800/20");
+          console.log("execute trade");
+          return "";
+        }
+        return prev;
+      });
+    }
+
+    if (e.key === "Backspace") {
+      setBrokerText((prev) => prev.slice(0, -1));
+    }
+
+    if (e.key === "b" || e.key === "+") {
+      setBrokerMode("Buy");
+      setBrokerBackgroundColor("bg-green-800/20");
+    }
+
+    if (e.key === "s" || e.key === "-") {
+      setBrokerMode("Sell");
+      setBrokerBackgroundColor("bg-red-800/20");
+    }
+    // invalid key inputted
+    if (e.key < "0" || e.key > "9") {
+      return;
+    }
+
+    // update broker text
+    // ignore leading 0's
+    setBrokerText((prev) => {
+      if (!(prev.length === 0 && e.key === "0")) {
+        return prev + e.key;
+      }
+      return prev;
+    });
+  };
+
+  // set broker background to default after a delay
+  useEffect(() => {
+    if (brokerBackgroundColor !== "") {
+      setTimeout(() => {
+        setBrokerBackgroundColor("");
+      }, 150);
+    }
+  }, [brokerBackgroundColor]);
+
   return (
     <>
       <div className="absolute right-0 w-1/3 h-1/2 border-1">
@@ -373,15 +454,15 @@ const BaseGameSolo = () => {
           {CASH != -1 ? "$" + CASH.toFixed(2) : <CircularProgress size={20} />}
         </h1>
         <h1>Stocks Owned: 0</h1>
-        
+
         <div className="mt-32 flex flex-col space-y-4">
           <div className="flex justify-between items-center w-full mb-1">
             <h1>Buy Stock</h1>
-            <TextField className="w-20" size="small" label="Qty"/>
+            <TextField className="w-20" size="small" label="Qty" />
           </div>
           <div className="flex justify-between items-center w-full mb-1">
             <h1>Sell Stock</h1>
-            <TextField className="w-20" size="small" label="Qty"/>
+            <TextField className="w-20" size="small" label="Qty" />
           </div>
         </div>
       </div>
@@ -431,6 +512,11 @@ const BaseGameSolo = () => {
 
       <Button
         onClick={toggleDataGeneration}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
         disabled={gameId === "" || isResuming || isBetweenDays}
       >
         {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
@@ -535,8 +621,25 @@ const BaseGameSolo = () => {
           <Button onClick={goToNextDay}>Next Day</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Stock Broker */}
+      {isGeneratingData ? (
+        <div
+          className={`absolute top-0 left-0 w-full h-full pointer-events-none flex items-center justify-center ${brokerBackgroundColor}`}
+        >
+          <h1
+            className={`text-[156px]  ${
+              brokerMode === "Buy" ? "text-green-500/40" : "text-red-500/40"
+            } font-bold`}
+          >
+            {brokerText}
+          </h1>
+        </div>
+      ) : (
+        <></>
+      )}
     </>
   );
 };
 
-export default BaseGameSolo;
+export default BaseGame;

@@ -4,8 +4,6 @@ add color/symbols in price UI to indicate increases/decreases in price
 toggle on create game screen for toggling random events on/off
 
 
-encode number of data points inside of binary file?? (terminate uncompression earlier)
-
 
 prevent mobile from accessing game (or change UI on mobile?)
 
@@ -15,8 +13,8 @@ work on solo mode
 
 
 
-have tutorial emcompass regular mode as well (or separate tutorials for separet gamemodes?)
+have tutorial encompass regular mode as well (or separate tutorials for separet gamemodes?)
 
 remove console.log statements
 
-remove/change django secret key
+remove & change django secret key
