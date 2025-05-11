@@ -9,6 +9,8 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
+
 import {
   Alert,
   Button,
@@ -45,9 +47,10 @@ let SEED: string = "";
 const FAKEDATA: DataPoint[] = [];
 
 const BaseGame = () => {
+  const [gameId, setGameId] = useState<string>("");
+
   // array to hold price of stock
   const [data, setData] = useState<DataPoint[]>(FAKEDATA);
-  const [gameId, setGameId] = useState<String>("");
 
   // state to control if data is being generated
   const [isGeneratingData, setIsGeneratingData] = useState<boolean>(false);
@@ -74,7 +77,7 @@ const BaseGame = () => {
   // during this time, do not allow the user to pause the game again
   const [isResuming, setIsResuming] = useState<boolean>(false);
 
-  // indicates whether game is being set up (making a new game or loading previous data)
+  // indicates whether game is being set up (making a new game or aing previous data)
   // when setting up, display a loading circle
   const [isSettingUp, setIsSettingUp] = useState<boolean>(false);
 
@@ -141,106 +144,65 @@ const BaseGame = () => {
   };
 
   // creates a new base game
-  const createNewBaseGame = async () => {
-    const gameId = localStorage.getItem("gameId");
+  const loadBaseGame = async () => {
     setIsSettingUp(true);
-    // game already exists, load it in
-    if (gameId != null) {
-      try {
-        setGameId(gameId);
-        const response = await axios.get(`${web_url}/get-game-manager/`);
-        let pastValues = response.data.game_manager[gameId].stock.past_values;
-
-        const dayNumber = Math.max(
-          Math.floor((pastValues.length - 11) / NUMTICKSPERDAY) + 1,
-          1
-        );
-        setCurTradingDay(dayNumber);
-        ticksGenerated.current = pastValues.length - 10;
-        const startingIndex = (dayNumber - 1) * NUMTICKSPERDAY;
-        pastValues = pastValues.slice(startingIndex);
-
-        // load in saved data from database
-        let prevData: DataPoint[] = [];
-        for (const price of pastValues) {
-          const newDataPoint: DataPoint = {
-            time: prevData.length + 1 - 10 + (dayNumber - 1) * NUMTICKSPERDAY,
-            value: price.toFixed(2),
-          };
-          prevData.push(newDataPoint);
-          minValue.current = Math.min(minValue.current, price);
-          maxValue.current = Math.max(maxValue.current, price);
-        }
-
-        setData(prevData);
-        const firstPriceOfDay = prevData[9].value;
-        const lastPrice = prevData[prevData.length - 1].value;
-
-        if (lastPrice > firstPriceOfDay) {
-          setStockStatus("Above");
-        } else if (lastPrice < firstPriceOfDay) {
-          setStockStatus("Below");
-        } else {
-          setStockStatus("Neutral");
-        }
-
-        setStockChange(Decimal(lastPrice).minus(Decimal(firstPriceOfDay)));
-
-        setIsSettingUp(false);
-
-        if (
-          ticksGenerated.current > 0 &&
-          ticksGenerated.current % NUMTICKSPERDAY == 0
-        ) {
-          setIsBetweenDays(true);
-          handleEndOfDay();
-        }
-      } catch (error) {
-        console.error(
-          "error getting game manager and loading previous data:",
-          error
-        );
-      }
-
-      // create a new game
-    } else {
-      try {
-        const response = await axios.post(`${web_url}/create-base-game/`, {
-          seed: SEED,
-          total_ticks: NUMTICKSPERDAY * NUMTRADINGDAYS,
-        });
-
-        setIsSettingUp(false);
-        let initialData: DataPoint[] = [];
-        for (const price of response.data.initial_prices) {
-          const newDataPoint: DataPoint = {
-            time: initialData.length + 1 - 10,
-            value: price.toFixed(2),
-          };
-          initialData.push(newDataPoint);
-          minValue.current = Math.min(minValue.current, price);
-          maxValue.current = Math.max(maxValue.current, price);
-        }
-        setData(initialData);
-
-        setGameId(response.data.base_game.id);
-        localStorage.setItem("gameId", response.data.base_game.id);
-        ticksGenerated.current = 0;
-        setCurTradingDay(1);
-      } catch (error) {
-        console.error("Error posting data:", error);
-      }
-    }
-  };
-
-  // registers the base game that was just created
-  const registerGame = async () => {
+    // load in the game
     try {
-      const response = await axios.post(
-        `${web_url}/register-base-game/${gameId}/`
+      const response = await axios.get(`${web_url}/get-game-manager/`);
+      let pastValues = response.data.game_manager[gameId!].stock.past_values;
+
+      const dayNumber = Math.max(
+        Math.floor((pastValues.length - 11) / NUMTICKSPERDAY) + 1,
+        1
       );
+      setCurTradingDay(dayNumber);
+      ticksGenerated.current = pastValues.length - 10;
+      const startingIndex = (dayNumber - 1) * NUMTICKSPERDAY;
+      pastValues = pastValues.slice(startingIndex);
+
+      // load in saved data from database
+      let prevData: DataPoint[] = [];
+      for (const price of pastValues) {
+        const newDataPoint: DataPoint = {
+          time: prevData.length + 1 - 10 + (dayNumber - 1) * NUMTICKSPERDAY,
+          value: price.toFixed(2),
+        };
+        prevData.push(newDataPoint);
+        minValue.current = Math.min(minValue.current, price);
+        maxValue.current = Math.max(maxValue.current, price);
+      }
+
+      setData(prevData);
+      const firstPriceOfDay = prevData[9].value;
+      const lastPrice = prevData[prevData.length - 1].value;
+
+      if (lastPrice > firstPriceOfDay) {
+        setStockStatus("Above");
+      } else if (lastPrice < firstPriceOfDay) {
+        setStockStatus("Below");
+      } else {
+        setStockStatus("Neutral");
+      }
+
+      setStockChange(Decimal(lastPrice).minus(Decimal(firstPriceOfDay)));
+
+      setIsSettingUp(false);
+
+      if (
+        ticksGenerated.current > 0 &&
+        ticksGenerated.current % NUMTICKSPERDAY == 0
+      ) {
+        setIsBetweenDays(true);
+        handleEndOfDay();
+      }
     } catch (error) {
-      console.error("Error posting data:", error);
+      console.error(
+        "error getting game manager and loading previous data:",
+        error
+      );
+      setData([{ time: 0, value: "0" }]);
+      setCurTradingDay(0);
+      setIsSettingUp(false);
     }
   };
 
@@ -281,17 +243,10 @@ const BaseGame = () => {
     document.addEventListener("keydown", openSummary);
   };
 
-  // when a new game gets created, register it
-  useEffect(() => {
-    if (gameId != "") {
-      registerGame();
-    }
-  }, [gameId]);
-
   // handle generation of data
   useEffect(() => {
     // no game registered yet
-    if (gameId == "") {
+    if (!gameId || gameId == "") {
       return;
     }
 
@@ -417,18 +372,28 @@ const BaseGame = () => {
 
   // initial setup
   useEffect(() => {
-    // Check if we're in the browser environment
-    if (typeof window !== "undefined") {
-      const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
-      NUMTICKSPERDAY = parseInt(gameSetup.numTicksPerDay);
-      NUMTRADINGDAYS = parseInt(gameSetup.numTradingDays);
-      CASH = parseFloat(gameSetup.startingCash);
-      TIMEBETWEENTICKS = parseFloat(gameSetup.timeBetweenTicks) * 1000;
-      VOLATILITY = parseFloat(gameSetup.volatility);
-      SEED = gameSetup.seed;
-      createNewBaseGame();
+    if (typeof window == undefined) {
+      return;
     }
+
+    const url = window.location.href;
+    const urlParts = url.split('/'); 
+    const id = urlParts[urlParts.length - 1];
+    setGameId(id);
+    const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
+    NUMTICKSPERDAY = parseInt(gameSetup.numTicksPerDay);
+    NUMTRADINGDAYS = parseInt(gameSetup.numTradingDays);
+    CASH = parseFloat(gameSetup.startingCash);
+    TIMEBETWEENTICKS = parseFloat(gameSetup.timeBetweenTicks) * 1000;
+    VOLATILITY = parseFloat(gameSetup.volatility);
+    SEED = gameSetup.seed;
   }, []);
+
+  useEffect(() => {
+    if (gameId !== "") {
+      loadBaseGame();
+    }
+  }, [gameId])
 
   // handle broker text
   const handleBrokerText = (e: any) => {

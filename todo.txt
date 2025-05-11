@@ -1,6 +1,9 @@
 add multiplier to stock values (for stocks that don't move much; could implement randomness/volatility here)
 toggle on create game screen for toggling random events on/off
-toggle for tutorial mode
+
+
+fix chart cutting off large prices
+
 
 add polling on frontend to get updates on transactions made by the user
 

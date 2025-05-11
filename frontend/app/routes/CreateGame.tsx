@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Button, Paper } from "@mui/material";
+import { Button, Checkbox, Paper } from "@mui/material";
 import {
   ArrowBack,
   ArrowForward,
@@ -19,9 +19,8 @@ import {
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
 
-const gameModes = ["Tutorial", "Base Game (Solo)", "Base Game (Regular)"];
+const gameModes = ["Base Game (Solo)", "Base Game (Regular)"];
 const descriptions = [
-  "Learn how to play the game!",
   "Base game with no bots. Stock prices are derived from historical stock prices, random in-game events, and your actions. You are able to directly buy/sell stock at the listed price.",
   "Base game where you trade against bots. Stock prices are derived from historical stock prices, random in-game events, and current supply/demand. You are able to create various types of buy/sell orders, and trades are only executed when orders can be fulfilled.",
   "c",
@@ -33,9 +32,8 @@ import web_url from "web-url";
 
 const CreateGame = () => {
   const games = Object.freeze({
-    TUTORIAL: 0,
-    BASE_GAME_SOLO: 1,
-    BASE_GAME_REGULAR: 2,
+    BASE_GAME_SOLO: 0,
+    BASE_GAME_REGULAR: 1,
   });
 
   const navigate = useNavigate();
@@ -44,7 +42,9 @@ const CreateGame = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   // selected index for game mode
-  const [selectedIndex, setSelectedIndex] = useState<number>(games.TUTORIAL);
+  const [selectedIndex, setSelectedIndex] = useState<number>(
+    games.BASE_GAME_SOLO
+  );
 
   // tracks whether or not the user has moved the selection for the game mode
   // this prevents the "fade in" animation upon page load
@@ -79,6 +79,8 @@ const CreateGame = () => {
   const [volatility, setVolatility] = useState("10");
   const [volatilityError, setVolatilityError] = useState(false);
   const [volatilityMessage, setVolatilityMessage] = useState("");
+
+  const [isTutorial, setIsTutorial] = useState(false);
 
   // indicates whether a game already exists or not
   const [existingGame, setExistingGame] = useState(false);
@@ -115,23 +117,15 @@ const CreateGame = () => {
 
   // set game parameters
   useEffect(() => {
-    if (selectedIndex == games.TUTORIAL) {
-      setNumTradingDays("3");
-      setNumTicksPerDay("20");
-      setTimeBetweenTicks("1");
-      setStartingCash("1500");
-      setVolatility("1");
-      setSeed("");
-      setIsLoaded(true);
-    } else {
+    if (selectedIndex == games.BASE_GAME_SOLO) {
       setNumTradingDays("10");
       setNumTicksPerDay("20");
       setTimeBetweenTicks("1.5");
       setStartingCash("1000");
       setVolatility("10");
       setSeed("");
-    }
-    if (selectedIndex == games.BASE_GAME_REGULAR) {
+      setIsLoaded(true);
+    } else if (selectedIndex == games.BASE_GAME_REGULAR) {
       setNumBots("30");
       setNumMM("3");
     }
@@ -168,6 +162,10 @@ const CreateGame = () => {
 
   const handleSeed = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSeed(e.target.value);
+  };
+
+  const handleTutorial = () => {
+    setIsTutorial((prev) => !prev);
   };
 
   // validators for text fields
@@ -317,6 +315,7 @@ const CreateGame = () => {
       startingCash,
       volatility,
       seed,
+      isTutorial,
     };
 
     if (selectedIndex == games.BASE_GAME_REGULAR) {
@@ -336,38 +335,42 @@ const CreateGame = () => {
         setPrevGame(prevGame);
       } else {
         localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
-        localStorage.removeItem("gameId");
 
-        if (selectedIndex == games.BASE_GAME_SOLO) {
-          navigate("/game");
-        }
+        await createNewGame();
       }
     };
     getPrevGame();
   };
 
   // load in previous game
+  // differentiate between different game types?
   const loadPrevGame = () => {
-    const gameType = JSON.parse(
-      localStorage.getItem("gameSetup") || ""
-    ).gameType;
-    if (gameType == 1) {
-      navigate("/game");
-    }
+    navigate(`/game/${localStorage.getItem("gameId")}`);
   };
 
-  // create new game
-  const createNewGame = async () => {
+  // delete old game from game manager
+  const deleteOldGame = async () => {
     const response = await axios.delete(
       `${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`
     );
 
     localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
-    localStorage.removeItem("gameId");
+    await createNewGame();
+  };
 
-    if (selectedIndex == games.BASE_GAME_SOLO) {
-      navigate("/game");
-    }
+  // creates a new game, registers it, and navigates to the new page
+  const createNewGame = async () => {
+    const createResponse = await axios.post(`${web_url}/create-base-game/`, {
+      seed: seed,
+      total_ticks: parseInt(numTicksPerDay) * parseInt(numTradingDays),
+    });
+    const gameId = createResponse.data.base_game.id;
+    localStorage.setItem("gameId", gameId);
+    const registerReponse = await axios.post(
+      `${web_url}/register-base-game/${gameId}/`
+    );
+
+    navigate(`/game/${gameId}`);
   };
 
   return (
@@ -440,6 +443,7 @@ const CreateGame = () => {
                     onChange={handleNumBots}
                     error={numBotsError}
                     helperText={numBotsMessage}
+                    disabled={isTutorial}
                     sx={{
                       "& .MuiFormHelperText-root": {
                         fontSize: ".6rem",
@@ -476,6 +480,7 @@ const CreateGame = () => {
                     type="number"
                     error={numMMError}
                     helperText={numMMMessage}
+                    disabled={isTutorial}
                     sx={{
                       "& .MuiFormHelperText-root": {
                         fontSize: ".6rem",
@@ -515,7 +520,7 @@ const CreateGame = () => {
                 onChange={handleNumTradingDays}
                 error={numTradingDaysError}
                 helperText={numTradingDaysMessage}
-                disabled={selectedIndex == games.TUTORIAL}
+                disabled={isTutorial}
                 sx={{
                   "& .MuiFormHelperText-root": {
                     fontSize: ".6rem",
@@ -550,7 +555,7 @@ const CreateGame = () => {
                 type="number"
                 error={numTicksPerDayError}
                 helperText={numTicksPerDayMessage}
-                disabled={selectedIndex == games.TUTORIAL}
+                disabled={isTutorial}
                 sx={{
                   "& .MuiFormHelperText-root": {
                     fontSize: ".6rem",
@@ -584,7 +589,7 @@ const CreateGame = () => {
                 type="number"
                 error={timeBetweenTicksError}
                 helperText={timeBetweenTicksMessage}
-                disabled={selectedIndex == games.TUTORIAL}
+                disabled={isTutorial}
                 sx={{
                   "& .MuiFormHelperText-root": {
                     fontSize: ".6rem",
@@ -618,7 +623,7 @@ const CreateGame = () => {
                 type="number"
                 error={startingCashError}
                 helperText={startingCashMessage}
-                disabled={selectedIndex == games.TUTORIAL}
+                disabled={isTutorial}
                 sx={{
                   "& .MuiFormHelperText-root": {
                     fontSize: ".6rem",
@@ -652,7 +657,7 @@ const CreateGame = () => {
                 type="number"
                 error={volatilityError}
                 helperText={volatilityMessage}
-                disabled={selectedIndex == games.TUTORIAL}
+                disabled={isTutorial}
                 sx={{
                   "& .MuiFormHelperText-root": {
                     fontSize: ".6rem",
@@ -683,7 +688,25 @@ const CreateGame = () => {
                 className="w-48"
                 value={seed}
                 onChange={handleSeed}
-                disabled={selectedIndex == games.TUTORIAL}
+                disabled={isTutorial}
+              />
+            </div>
+
+            <div className="flex justify-between items-center w-full mb-1">
+              <span>
+                Tutorial Mode
+                <Tooltip
+                  title="Toggles tutorial mode, where you can learn how to play the game."
+                  className="mb-0.5 ml-1"
+                >
+                  <InfoOutline fontSize="small" />
+                </Tooltip>
+              </span>
+              <Checkbox
+                id="tutorial"
+                size="small"
+                checked={isTutorial}
+                onChange={handleTutorial}
               />
             </div>
             <Button
@@ -699,6 +722,7 @@ const CreateGame = () => {
         )}
       </Paper>
 
+      {/* Previous game has been found */}
       <Dialog
         open={existingGame}
         onClose={handleCloseDialog}
@@ -736,7 +760,7 @@ const CreateGame = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={loadPrevGame}>Load Previous Game</Button>
-            <Button onClick={createNewGame}>Create New Game</Button>
+            <Button onClick={deleteOldGame}>Create New Game</Button>
           </DialogActions>
         </div>
       </Dialog>

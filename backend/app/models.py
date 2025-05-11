@@ -148,7 +148,7 @@ class BaseGame(models.Model):
     num_players = models.BigIntegerField(default=0)
     players = models.ManyToManyField(Player, related_name="players")
     seed = models.CharField(max_length=256, default="")
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="games")
+    stock = models.ForeignKey(Stock, related_name="games", on_delete=models.CASCADE)
     time_to_next_tick = models.FloatField(default=-1)
     is_paused = models.BooleanField(default=True)
 
