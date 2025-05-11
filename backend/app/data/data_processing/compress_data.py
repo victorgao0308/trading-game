@@ -4,7 +4,7 @@ import math
 from bitarray import bitarray
 import os
 
-# removes all columns except for CLOSE
+# removes all columns except for CLOSE (price at end of day)
 def process_data(fileName):
     filePath = f'../raw_data/{fileName}'
 
@@ -16,13 +16,13 @@ def process_data(fileName):
 
 
 # compresses file down
-# check _FORMAT.md inside of compressed_data/ for how the compression works
-# returns 
+# check FORMAT.md inside of app/data/ for how the compression works
 def compress_data(fileName):
     filePath = f'../raw_data/{fileName}'
 
 
     # only read in the CLOSE column (stock prices at day close)
+    # ignore the indexing columm pandas adds
     data = pd.read_csv(filePath)
     data = data["<CLOSE>"].to_list()
 
@@ -32,6 +32,7 @@ def compress_data(fileName):
 
 
     # array to hold elements of binary string together
+    # build the string at the end
     # more efficient than constantly having to create new strings
     # save index 0 for the offset
     binary_string = ['']
@@ -151,6 +152,3 @@ def uncompress_data(fileName, start, numPoints):
 # uncompress_data("aapl.us.txt")
 
 # files = [f for f in os.listdir("app/data/compressed_data") if os.path.isfile(os.path.join("app/data/compressed_data", f))]
-
-
-

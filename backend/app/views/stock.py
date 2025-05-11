@@ -11,8 +11,6 @@ from app.tasks import handle_buy_stock
 
 
 def create_stock(seed, total_ticks):
-
-    print('initial call')
     stock = Stock()
 
     # set the seed
@@ -39,7 +37,6 @@ def create_stock(seed, total_ticks):
         ba.fromfile(f)
 
     ba = ba.to01()
-
 
     # number of data points
     points = int(ba[3:19], 2)

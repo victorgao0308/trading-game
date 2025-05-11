@@ -1,9 +1,9 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from ..models import BaseGame, GameManager
+from ..models import BaseGame, GameManager, Player
 from ..engine.prices import getNextPriceSolo
-
+from .player import create_player
 from .stock import create_stock
 
 
@@ -23,15 +23,28 @@ def create_base_game(request):
 
 
     stock, initial_prices = create_stock(seed, total_ticks)
+    system = create_player(Player.ROLE_SYSTEM)
+    player = create_player(Player.ROLE_PLAYER)
+    if system is None or player is None:
+        return Response({
+        "error": "Error with player creation"    
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     base_game = BaseGame()
+    
     base_game.seed = seed
     base_game.stock = stock
+    base_game.num_players = 2
+    base_game.save()
+
+    base_game.players.set([system, player])
 
 
     if num_players is not None:
         base_game.num_players = num_players
+
     base_game.save()
+
     return Response({
         "success": "Base game created",
         "base_game": base_game.to_dict(),

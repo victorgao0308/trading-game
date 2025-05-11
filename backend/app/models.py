@@ -109,22 +109,30 @@ class Stock(models.Model):
 Player
 
 Player object; holds player id, player role, and amount of money player has
+3 roles:
+System: who the player makes transactions with in a solo game
+Player: the player
+Bot: bots in the game that the player is trading against
 
 '''
 class Player(models.Model):
+    ROLE_SYSTEM = 0
+    ROLE_PLAYER = 1
+    ROLE_BOT = 2
+
     ROLE_CHOICES = [
-        (0, "System"),
-        (1, "Player"),
-        (2, "Bot")
+        (ROLE_SYSTEM, "System"),
+        (ROLE_PLAYER, "Player"),
+        (ROLE_BOT, "Bot"),
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    role = models.IntegerField(choices=ROLE_CHOICES, default = 0)
+    role = models.IntegerField(choices=ROLE_CHOICES, default = ROLE_SYSTEM)
     money = models.DecimalField(default=0, decimal_places=2, max_digits=20)
 
     def to_dict(self):
         return {
             "id": self.id,
-            "role": self.role,
+            "role": self.get_role_display(),
             "money": self.money
         }
 
