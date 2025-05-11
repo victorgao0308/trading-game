@@ -142,7 +142,7 @@ def remove_game_from_manager(request, game_id):
         return Response({
             "success": f"Base game with id {game_id} removed from game manager successfully",
             "game_id" : game_id,
-            "game_manager" : manager.games
+            "game_manager" : [game.to_string() for game in manager.games]
             },status=status.HTTP_200_OK)
     
 

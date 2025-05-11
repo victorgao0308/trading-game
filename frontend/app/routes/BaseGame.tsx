@@ -535,7 +535,7 @@ const BaseGame = () => {
         }}
         disabled={gameId === "" || isResuming || isBetweenDays}
       >
-        {isGeneratingData ? "Stop Data Generation" : "Start Data Generation"}
+        {isGeneratingData ? "Stop Data Generation (SpaceBar)" : "Start Data Generation (SpaceBar)"}
       </Button>
 
       <div style={{ width: "47.5%", height: 400 }}>

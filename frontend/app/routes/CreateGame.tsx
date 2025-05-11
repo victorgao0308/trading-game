@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
@@ -81,6 +82,8 @@ const CreateGame = () => {
   const [volatilityMessage, setVolatilityMessage] = useState("");
 
   const [isTutorial, setIsTutorial] = useState(false);
+
+  const [isDeletingGame, setIsDeletingGame] = useState(false);
 
   // indicates whether a game already exists or not
   const [existingGame, setExistingGame] = useState(false);
@@ -350,6 +353,7 @@ const CreateGame = () => {
 
   // delete old game from game manager
   const deleteOldGame = async () => {
+    setIsDeletingGame(true);
     const response = await axios.delete(
       `${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`
     );
@@ -369,6 +373,7 @@ const CreateGame = () => {
     const registerReponse = await axios.post(
       `${web_url}/register-base-game/${gameId}/`
     );
+    setIsDeletingGame(false);
 
     navigate(`/game/${gameId}`);
   };
@@ -758,10 +763,17 @@ const CreateGame = () => {
             ></Divider>
             Load the preivous game, or create a new one?
           </DialogContent>
-          <DialogActions>
-            <Button onClick={loadPrevGame}>Load Previous Game</Button>
-            <Button onClick={deleteOldGame}>Create New Game</Button>
-          </DialogActions>
+
+          {isDeletingGame ? (
+            <div className="w-full h-12 flex justify-center">
+              <CircularProgress size={32} />
+            </div>
+          ) : (
+            <DialogActions>
+              <Button onClick={loadPrevGame}>Load Previous Game</Button>
+              <Button onClick={deleteOldGame}>Create New Game</Button>
+            </DialogActions>
+          )}
         </div>
       </Dialog>
     </div>
