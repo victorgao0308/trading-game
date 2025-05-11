@@ -723,7 +723,7 @@ const CreateGame = () => {
             Type: {prevGame.type} <br />
             ID: {prevGame.id} <br />
             Ticks Generated: {prevGame.stock.ticks_generated} <br />
-            Current Stock Price: ${prevGame.stock.current_price} <br />
+            Current Stock Price: ${prevGame.stock.current_price.toFixed(2)} <br />
             Player Total Assets: 0 (TO DO) <br />
             <Divider
               className="w-full font-bold !my-2"

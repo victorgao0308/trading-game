@@ -4,6 +4,10 @@ import json
 import os
 from app.data.data_processing.compress_data import uncompress_data
 from bitarray import bitarray
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from app.tasks import handle_buy_stock
 
 
 def create_stock(seed, total_ticks):
@@ -67,7 +71,24 @@ def create_stock(seed, total_ticks):
     return stock, initial_prices
 
 
-    
+
+# purchase a stock
+@api_view(['POST'])
+def buy_stock(request):
+    game_id = request.data.get('game_id')
+    player_id = request.data.get('player_id')
+    quantity = request.data.get('quantity')
+    timestamp = request.data.get('timestamp')
+
+    handle_buy_stock(game_id, player_id, quantity, timestamp)
+
+
+    return Response({
+    "success": "order placed",
+    }, status=status.HTTP_200_OK)
+
+
+
 
 
 

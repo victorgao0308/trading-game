@@ -9,7 +9,6 @@ on the player's purchasing patterns.
 '''
 def getNextPriceSolo(game_id):
     manager = GameManager()
-    
     game = manager.get_game(game_id)
 
     if game == None:

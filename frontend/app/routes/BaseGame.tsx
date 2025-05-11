@@ -19,13 +19,15 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
 } from "@mui/material";
+
+import { ArrowDropUp, ArrowDropDown } from "@mui/icons-material";
 
 import axios from "axios";
 
 import web_url from "web-url";
-import { ConnectingAirportsOutlined } from "@mui/icons-material";
+
+import Decimal from "decimal.js";
 
 interface DataPoint {
   time: number;
@@ -107,6 +109,20 @@ const BaseGame = () => {
   const [brokerBackgroundColor, setBrokerBackgroundColor] =
     useState<string>("");
 
+  // current number of stocks owned by the player
+  // must be an integer
+  // negative values means the player is shorting the stock
+  const [stocksOwned, setStocksOwned] = useState<number>(0);
+
+  // stock status
+  // Nuetral: stock is at same price compared to start of day
+  // Above: stock is at higher price compared to start of day
+  // Below: stock is at lower price compared to start of day
+  const [stockStatus, setStockStatus] = useState<string>("Neutral");
+
+  // change between current price of stock and price at start of day
+  const [stockChange, setStockChange] = useState<Decimal>(Decimal(0));
+
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
@@ -157,6 +173,18 @@ const BaseGame = () => {
         }
 
         setData(prevData);
+        const firstPriceOfDay = prevData[9].value;
+        const lastPrice = prevData[prevData.length - 1].value;
+
+        if (lastPrice > firstPriceOfDay) {
+          setStockStatus("Above");
+        } else if (lastPrice < firstPriceOfDay) {
+          setStockStatus("Below");
+        } else {
+          setStockStatus("Neutral");
+        }
+
+        setStockChange(Decimal(lastPrice).minus(Decimal(firstPriceOfDay)));
 
         setIsSettingUp(false);
 
@@ -287,6 +315,17 @@ const BaseGame = () => {
           };
           return [...prevData, newPoint];
         });
+
+        const firstPriceOfDay = data[9].value;
+        if (next_price > firstPriceOfDay) {
+          setStockStatus("Above");
+        } else if (next_price < firstPriceOfDay) {
+          setStockStatus("Below");
+        } else {
+          setStockStatus("Neutral");
+        }
+        setStockChange(Decimal(next_price).minus(Decimal(firstPriceOfDay)));
+
         lastTimestamp.current = currentTime;
         isPaused.current = false;
         timeInTick.current = 0;
@@ -364,6 +403,7 @@ const BaseGame = () => {
 
   const goToNextDay = () => {
     setOpenSummaryWindow(false);
+    setStockStatus("Neutral");
 
     const lastTen = data.slice(-10);
 
@@ -453,27 +493,38 @@ const BaseGame = () => {
           Cash:{" "}
           {CASH != -1 ? "$" + CASH.toFixed(2) : <CircularProgress size={20} />}
         </h1>
-        <h1>Stocks Owned: 0</h1>
-
-        <div className="mt-32 flex flex-col space-y-4">
-          <div className="flex justify-between items-center w-full mb-1">
-            <h1>Buy Stock</h1>
-            <TextField className="w-20" size="small" label="Qty" />
-          </div>
-          <div className="flex justify-between items-center w-full mb-1">
-            <h1>Sell Stock</h1>
-            <TextField className="w-20" size="small" label="Qty" />
-          </div>
-        </div>
+        <h1>Stocks Owned: {stocksOwned}</h1>
       </div>
 
       <h1>
-        Current Price:{" "}
-        {data.length >= 1 ? (
-          "$" + data[data.length - 1].value
-        ) : (
-          <CircularProgress size={20} />
-        )}
+        <div>
+          Current Price:{" "}
+          {data.length >= 1 ? (
+            "$" + data[data.length - 1].value
+          ) : (
+            <CircularProgress size={20} />
+          )}
+          {stockStatus === "Above" ? (
+            <ArrowDropUp className="text-green-600" />
+          ) : stockStatus === "Below" ? (
+            <ArrowDropDown className="text-red-600" />
+          ) : (
+            <></>
+          )}
+          {stockStatus !== "Neutral" ? (
+            <span
+              className={
+                stockStatus === "Above" ? "text-green-600" : "text-red-600"
+              }
+            >
+              {stockChange.toString() !== "0"
+                ? "$" + stockChange.toFixed(2)
+                : ""}
+            </span>
+          ) : (
+            <></>
+          )}
+        </div>
       </h1>
 
       <h1>
