@@ -761,7 +761,7 @@ const CreateGame = () => {
               className="w-full font-bold !my-2"
               variant="fullWidth"
             ></Divider>
-            Load the preivous game, or create a new one?
+            Load the previous game, or create a new one?
           </DialogContent>
 
           {isDeletingGame ? (
