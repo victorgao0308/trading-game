@@ -88,7 +88,9 @@ const CreateGame = () => {
   const [seed, setSeed] = useState("");
 
   // holds previous game object
-  const [prevGame, setPrevGame] = useState<any>({ stock: {} });
+  const [prevGame, setPrevGame] = useState<any>({
+    stock: { type: "", id: "", ticks_generated: 0, current_price: 0 },
+  });
 
   // handlers for scrolling left/right on game type
   const handlePrevious = () => {
@@ -359,7 +361,7 @@ const CreateGame = () => {
     const response = await axios.delete(
       `${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`
     );
-    
+
     localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
     localStorage.removeItem("gameId");
 
@@ -723,7 +725,8 @@ const CreateGame = () => {
             Type: {prevGame.type} <br />
             ID: {prevGame.id} <br />
             Ticks Generated: {prevGame.stock.ticks_generated} <br />
-            Current Stock Price: ${prevGame.stock.current_price.toFixed(2)} <br />
+            Current Stock Price: ${prevGame.stock.current_price.toFixed(2)}{" "}
+            <br />
             Player Total Assets: 0 (TO DO) <br />
             <Divider
               className="w-full font-bold !my-2"

@@ -103,6 +103,31 @@ class Stock(models.Model):
             "next_values": self.next_values,
             "past_values": self.past_values
         }
+    
+
+'''
+Player
+
+Player object; holds player id, player role, and amount of money player has
+
+'''
+class Player(models.Model):
+    ROLE_CHOICES = [
+        (0, "System"),
+        (1, "Player"),
+        (2, "Bot")
+    ]
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    role = models.IntegerField(choices=ROLE_CHOICES, default = 0)
+    money = models.DecimalField(default=0, decimal_places=2, max_digits=20)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "role": self.role,
+            "money": self.money
+        }
+
 
 '''
 BaseGame
@@ -112,15 +137,14 @@ Base game that includes one stock option
 class BaseGame(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(default=timezone.now, editable=False)
-    num_players = models.BigIntegerField(default=1)
+    num_players = models.BigIntegerField(default=0)
+    players = models.ManyToManyField(Player, related_name="players")
     seed = models.CharField(max_length=256, default="")
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="games")
     time_to_next_tick = models.FloatField(default=-1)
     is_paused = models.BooleanField(default=True)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.request_queue = []
+
 
     def to_dict(self):
         return {
@@ -128,23 +152,10 @@ class BaseGame(models.Model):
             "id": self.id,
             "created_at": self.created_at,
             "num_players": self.num_players,
+            "players": [player.to_dict() for player in self.players.all()],
             "seed": self.seed,
-            "request_queue": self.request_queue,
+            # "request_queue": self.request_queue,
             "stock": self.stock.to_dict(),
             "time_to_next_tick": self.time_to_next_tick,
             "is_paused": self.is_paused
         }
-
-
-'''
-Player
-
-'''
-class Player(models.Model):
-    ROLE_CHOICES = [
-        (0, "Player"),
-        (1, "Bot"),
-    ]
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    role = models.IntegerField(choices=ROLE_CHOICES)
-    money = models.DecimalField(default=0, decimal_places=2, max_digits=20)

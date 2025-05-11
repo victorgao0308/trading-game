@@ -99,8 +99,6 @@ def uncompress_data(fileName, start, numPoints):
     ba = ba[3:len(ba) - offset]
 
 
-    # number of lines
-    lines = int(ba[:16], 2)
     ba = ba[16:]
 
     prices = []

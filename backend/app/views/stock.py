@@ -11,6 +11,8 @@ from app.tasks import handle_buy_stock
 
 
 def create_stock(seed, total_ticks):
+
+    print('initial call')
     stock = Stock()
 
     # set the seed
@@ -22,14 +24,13 @@ def create_stock(seed, total_ticks):
     data = random.choice(data)
 
     # select random historical stock to derive prices from
-    stocks = [f for f in os.listdir("app/data/compressed_data") if os.path.isfile(os.path.join("app/data/compressed_data", f))]
+    stocks = [f for f in os.listdir("app/data/compressed_data")]
     if stocks is None:
         return None
     
     underlying_stock = random.choice(stocks)
 
     stock.underlying_stock = underlying_stock[:-11]
-
 
     # read in the number of entries in this file
     filePath = f'app/data/compressed_data/{underlying_stock}'
@@ -43,13 +44,11 @@ def create_stock(seed, total_ticks):
     # number of data points
     points = int(ba[3:19], 2)
 
-
     # pick a random place within the file to act as the starting  point
     start_index = random.randint(0, points - total_ticks - 11)
 
     # get data points
     prices = uncompress_data(underlying_stock, start_index, total_ticks + 10)
-
 
     # set initial prices
     initial_prices = prices[:10]
