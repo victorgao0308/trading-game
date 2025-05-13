@@ -8,8 +8,6 @@ from django.contrib.postgres.fields import ArrayField
 '''
 GameManager
 
-NOT UTILIZED
-
 Keeps track of current active games, GameManager is not stored in the database; instead, it acts as global manager
 to keep track of the games that are currently running
 

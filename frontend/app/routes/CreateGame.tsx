@@ -83,7 +83,7 @@ const CreateGame = () => {
 
   const [isTutorial, setIsTutorial] = useState(false);
 
-  const [isDeletingGame, setIsDeletingGame] = useState(false);
+  const [isLoadingGame, setIsLoadingGame] = useState(false);
 
   // indicates whether a game already exists or not
   const [existingGame, setExistingGame] = useState(false);
@@ -337,15 +337,15 @@ const CreateGame = () => {
         setExistingGame(true);
         setPrevGame(prevGame);
       } else {
+        setIsLoadingGame(true);
         localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
-
         await createNewGame();
       }
     };
     getPrevGame();
   };
 
-  // load in previous game
+  // load in previous game, navigate to that page
   // differentiate between different game types?
   const loadPrevGame = () => {
     navigate(`/game/${localStorage.getItem("gameId")}`);
@@ -353,7 +353,7 @@ const CreateGame = () => {
 
   // delete old game from game manager
   const deleteOldGame = async () => {
-    setIsDeletingGame(true);
+    setIsLoadingGame(true);
     const response = await axios.delete(
       `${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`
     );
@@ -373,9 +373,8 @@ const CreateGame = () => {
     const registerReponse = await axios.post(
       `${web_url}/register-base-game/${gameId}/`
     );
-    setIsDeletingGame(false);
-
     navigate(`/game/${gameId}`);
+    setIsLoadingGame(false);
   };
 
   return (
@@ -714,13 +713,20 @@ const CreateGame = () => {
                 onChange={handleTutorial}
               />
             </div>
-            <Button
-              variant="contained"
-              className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              onClick={validateInputs}
-            >
-              Create
-            </Button>
+
+            {isLoadingGame ? (
+              <div className="w-full h-12 flex justify-center">
+                <CircularProgress size={32} />
+              </div>
+            ) : (
+              <Button
+                variant="contained"
+                className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={validateInputs}
+              >
+                Create
+              </Button>
+            )}
           </>
         ) : (
           <></>
@@ -762,9 +768,11 @@ const CreateGame = () => {
               variant="fullWidth"
             ></Divider>
             Load the previous game, or create a new one?
+            <div />
+            Creating a new game will override your previous one.
           </DialogContent>
 
-          {isDeletingGame ? (
+          {isLoadingGame ? (
             <div className="w-full h-12 flex justify-center">
               <CircularProgress size={32} />
             </div>

@@ -126,6 +126,10 @@ const BaseGame = () => {
   // change between current price of stock and price at start of day
   const [stockChange, setStockChange] = useState<Decimal>(Decimal(0));
 
+
+  // indicates whether game id is valid or not
+  const [isInvalidGame, setIsInvalidGame] = useState<boolean>(false);
+
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
@@ -203,6 +207,8 @@ const BaseGame = () => {
       setData([{ time: 0, value: "0" }]);
       setCurTradingDay(0);
       setIsSettingUp(false);
+      setIsInvalidGame(true);
+      ticksGenerated.current = 0;
     }
   };
 
@@ -627,6 +633,25 @@ const BaseGame = () => {
           sx={{ width: "400px", fontSize: "1.1rem", py: 2 }}
         >
           Trading day ended. Press any key to continue to the summary screen.
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={isInvalidGame}
+        message="Invalid Game Id."
+        slots={{ transition: Slide }}
+        slotProps={{
+          transition: {
+            direction: "left",
+          },
+        }}
+      >
+        <Alert
+          severity="error"
+          sx={{ width: "400px", fontSize: "1.1rem", py: 2 }}
+        >
+          Game ID is invalid. Please try again, or create a new game.
         </Alert>
       </Snackbar>
 

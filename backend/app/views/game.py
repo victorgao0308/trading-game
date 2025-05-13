@@ -131,7 +131,11 @@ def register_base_game(request, game_id):
 @api_view(['DELETE'])
 def remove_game_from_manager(request, game_id):
     manager = GameManager()
+    print(game_id)
     ret = manager.remove_game(game_id)
+
+    for game in manager.games:
+        print(type(game))
     if (ret == -1):
         return Response({
             "note": f"Game with id {game_id} does not exist in game manager",
@@ -142,7 +146,7 @@ def remove_game_from_manager(request, game_id):
         return Response({
             "success": f"Base game with id {game_id} removed from game manager successfully",
             "game_id" : game_id,
-            "game_manager" : [game.to_string() for game in manager.games]
+            "game_manager" : [game.to_dict() for game in manager.games.values()]
             },status=status.HTTP_200_OK)
     
 

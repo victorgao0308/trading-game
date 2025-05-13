@@ -14,7 +14,6 @@ work on solo mode
     when reloading a game, undo events up until the last tick
 
 
-
 have tutorial encompass regular mode as well (or separate tutorials for separet gamemodes?)
 
 remove console.log statements
