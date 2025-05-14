@@ -49,48 +49,48 @@ const CreateGame = () => {
 
   // tracks whether or not the user has moved the selection for the game mode
   // this prevents the "fade in" animation upon page load
-  const [hasMovedSelection, setHasMovedSelection] = useState(false);
-  const [direction, setDirection] = useState(0);
+  const [hasMovedSelection, setHasMovedSelection] = useState<boolean>(false);
+  const [direction, setDirection] = useState<number>(0);
 
   // useStates for input boxes, error states, and error messages
-  const [numBots, setNumBots] = useState("30");
-  const [numBotsError, setNumBotsError] = useState(false);
-  const [numBotsMessage, setNumBotsMessage] = useState("");
+  const [numBots, setNumBots] = useState<string>("30");
+  const [numBotsError, setNumBotsError] = useState<boolean>(false);
+  const [numBotsMessage, setNumBotsMessage] = useState<string>("");
 
-  const [numMM, setNumMM] = useState("3");
-  const [numMMError, setNumMMError] = useState(false);
-  const [numMMMessage, setNumMMMessage] = useState("");
+  const [numMM, setNumMM] = useState<string>("3");
+  const [numMMError, setNumMMError] = useState<boolean>(false);
+  const [numMMMessage, setNumMMMessage] = useState<string>("");
 
-  const [numTradingDays, setNumTradingDays] = useState("10");
-  const [numTradingDaysError, setNumTradingDaysError] = useState(false);
-  const [numTradingDaysMessage, setNumTradingDaysMessage] = useState("");
+  const [numTradingDays, setNumTradingDays] = useState<string>("10");
+  const [numTradingDaysError, setNumTradingDaysError] = useState<boolean>(false);
+  const [numTradingDaysMessage, setNumTradingDaysMessage] = useState<string>("");
 
-  const [numTicksPerDay, setNumTicksPerDay] = useState("20");
-  const [numTicksPerDayError, setNumTicksPerDayError] = useState(false);
-  const [numTicksPerDayMessage, setNumTicksPerDayMessage] = useState("");
+  const [numTicksPerDay, setNumTicksPerDay] = useState<string>("20");
+  const [numTicksPerDayError, setNumTicksPerDayError] = useState<boolean>(false);
+  const [numTicksPerDayMessage, setNumTicksPerDayMessage] = useState<string>("");
 
-  const [timeBetweenTicks, setTimeBetweenTicks] = useState("1.5");
-  const [timeBetweenTicksError, setTimeBetweenTicksError] = useState(false);
-  const [timeBetweenTicksMessage, setTimeBetweenTicksMessage] = useState("");
+  const [timeBetweenTicks, setTimeBetweenTicks] = useState<string>("1.5");
+  const [timeBetweenTicksError, setTimeBetweenTicksError] = useState<boolean>(false);
+  const [timeBetweenTicksMessage, setTimeBetweenTicksMessage] = useState<string>("");
 
-  const [startingCash, setStartingCash] = useState("1000");
-  const [startingCashError, setStartingCashError] = useState(false);
-  const [startingCashMessage, setStartingCashMessage] = useState("");
+  const [startingCash, setStartingCash] = useState<string>("1000");
+  const [startingCashError, setStartingCashError] = useState<boolean>(false);
+  const [startingCashMessage, setStartingCashMessage] = useState<string>("");
 
-  const [volatility, setVolatility] = useState("10");
-  const [volatilityError, setVolatilityError] = useState(false);
-  const [volatilityMessage, setVolatilityMessage] = useState("");
+  const [volatility, setVolatility] = useState<string>("10");
+  const [volatilityError, setVolatilityError] = useState<boolean>(false);
+  const [volatilityMessage, setVolatilityMessage] = useState<string>("");
 
-  const [isTutorial, setIsTutorial] = useState(false);
+  const [isTutorial, setIsTutorial] = useState<boolean>(false);
 
-  const [isLoadingGame, setIsLoadingGame] = useState(false);
+  const [isLoadingGame, setIsLoadingGame] = useState<boolean>(false);
 
   // indicates whether a game already exists or not
-  const [existingGame, setExistingGame] = useState(false);
+  const [existingGame, setExistingGame] = useState<boolean>(false);
 
   const gameSetup = useRef<any>({});
 
-  const [seed, setSeed] = useState("");
+  const [seed, setSeed] = useState<string>("");
 
   // holds previous game object
   const [prevGame, setPrevGame] = useState<any>({

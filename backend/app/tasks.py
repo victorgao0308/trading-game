@@ -1,4 +1,6 @@
-from celery import shared_task 
+from celery import shared_task
+from .models import Player, GameManager
+
 
 @shared_task
 def my_test_task():
@@ -6,9 +8,8 @@ def my_test_task():
     return "Task completed"
 
 
+# handles purchasing of a stock by a player in solo mode
 @shared_task
-def handle_buy_stock(game_id, player_id, quantity, timestamp):
-    # Perform the stock transaction logic here
-    print(f"Buying {quantity} shares for player {player_id} in game {game_id} at {timestamp}")
-    # Add your actual business logic here
-    return {"status": "processed"}
+def handle_buy_stock_solo(player, quantity, price, stock_id):
+
+    return player

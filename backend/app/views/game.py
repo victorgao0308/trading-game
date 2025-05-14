@@ -23,9 +23,8 @@ def create_base_game(request):
 
 
     stock, initial_prices = create_stock(seed, total_ticks)
-    system = create_player(Player.ROLE_SYSTEM)
     player = create_player(Player.ROLE_PLAYER)
-    if system is None or player is None:
+    if player is None:
         return Response({
         "error": "Error with player creation"    
         }, status=status.HTTP_400_BAD_REQUEST)
@@ -34,10 +33,10 @@ def create_base_game(request):
     
     base_game.seed = seed
     base_game.stock = stock
-    base_game.num_players = 2
+    base_game.num_players = 1
     base_game.save()
 
-    base_game.players.set([system, player])
+    base_game.players.set([player])
 
 
     if num_players is not None:

@@ -53,60 +53,10 @@ class GameManager():
     
 
 '''
-Stock
-
-Base stock class. Keeps track of stock name, company name, and a short description of the company. Includes
-current stock price, and current buy and sell orders, if applicable.
-
-industries: contains a list of industries and sectors relevant to the current stock. This is used to
-generate random events in the game.
-ticks_generated: number of ticks generated for this stock
-underlying_stock: name of the real-world stock that prices are derived from
-first_tick_index: the index from the stock data that corresponds to the first price generated
-'''
-class Stock(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    stock_name = models.CharField(max_length=256, default="Stock XYZ")
-    company_name = models.CharField(max_length=256, default="Company XYZ")
-    description = models.TextField(default="Default stock description")
-    current_price = models.DecimalField(default=0, decimal_places=2, max_digits=20)
-    industries = ArrayField(models.CharField(max_length=256), blank=True, default=list)
-
-    ticks_generated = models.BigIntegerField(default=0)
-    underlying_stock = models.CharField(max_length=256, default="")
-    first_tick_index = models.BigIntegerField(default=-1)
-
-    buy_orders = models.JSONField(default=dict)
-    sell_orders = models.JSONField(default=dict)
-
-    # past stock prices
-    past_values = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
-
-    # values calculated in advance will be stored in this array
-    next_values = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "stock_name": self.stock_name,
-            "company_name": self.company_name,
-            "description": self.description,
-            "current_price": self.current_price,
-            "industries": self.industries,
-            "ticks_generated": self.ticks_generated,
-            "underlying_stock": self.underlying_stock,
-            "first_tick_index": self.first_tick_index,
-            "buy_orders": self.buy_orders,
-            "sell_orders": self.sell_orders,
-            "next_values": self.next_values,
-            "past_values": self.past_values
-        }
-    
-
-'''
 Player
 
-Player object; holds player id, player role, and amount of money player has
+Player object; holds player id, player role, amount of money player, and player's owned stocks
+For players owned stocks, key is stock id and value is quantity owned
 3 roles:
 System: who the player makes transactions with in a solo game
 Player: the player
@@ -126,14 +76,134 @@ class Player(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.IntegerField(choices=ROLE_CHOICES, default = ROLE_SYSTEM)
     money = models.DecimalField(default=0, decimal_places=2, max_digits=20)
+    owned_stocks = models.JSONField(default=dict)
 
     def to_dict(self):
         return {
             "id": self.id,
             "role": self.get_role_display(),
-            "money": self.money
+            "money": self.money,
+            "owned_stocks": self.owned_stocks
         }
 
+
+'''
+Order
+
+Order that a player places for a stock
+Type: type or order
+TYPE_SOLO: orders placed in solo mode, these get executed immediately
+
+Status: status of order
+STATUS_PLACED: order has been placed
+STATUS_PENDING: order has been fulfilled
+STATUS_FULFILLED: order has been fulfilled & cannot be changed
+STATUS_CANCELLED: order has been cancelled
+
+Orders with status STATUS_PLACED or STATUS_PENDING are placed on a stock's pending_orders field. Orders stored in this field
+are deleted if the game window gets reloaded. Stocks get transitioned from STATUS_PENDING to STATUS_FULFILLED in the game
+tick immediately after when the order has been fulfilled and transitioned to STATUS_PENDING.
+
+
+from_player: player that placed the order
+timestamp: timestamp at which order was placed
+quantity: amount of stocks to purchase/sell, a non-zero integer; negative values reflect selling the stock
+price: in solo mode, price of stock at time of order, or in regular mode, price that user want to buy/sell at
+
+'''
+class Order(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    TYPE_SOLO = 0
+    TYPE_CHOICES = [
+        (TYPE_SOLO, "Order in Solo Mode")
+    ]
+
+    STATUS_PLACED = 0
+    STATUS_PENDING = 1
+    STATUS_FULFILLED = 2
+    STATUS_CANCELLED = 3
+    STATUS_CHOICES = [
+        (STATUS_PLACED, "Order has been placed"),
+        (STATUS_PENDING, "Order has been fulfilled and is pending"),
+        (STATUS_FULFILLED, "Order has been fulfilled and cannot be changed"),
+        (STATUS_CANCELLED, "Order has been cancelled")
+    ]
+    type = models.IntegerField(choices=TYPE_CHOICES, default = TYPE_SOLO)
+    status = models.IntegerField(choices=STATUS_CHOICES, default = STATUS_PLACED)
+    from_player = models.ForeignKey(Player, related_name="from_player", on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now, editable=False)
+    quantity = models.BigIntegerField()
+    price = models.DecimalField(default=0, decimal_places=2, max_digits=20)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "type": self.get_type_display(),
+            "status": self.get_status_display(),
+            "from_player": self.from_player.to_dict(),
+            "timestamp": self.timestamp,
+            "quantity": self.quantity,
+            "price": self.price
+        }
+    
+
+'''
+Stock
+
+Base stock class. Keeps track of stock name, company name, and a short description of the company. Includes
+current stock price, and current buy and sell orders, if applicable.
+
+industries: contains a list of industries and sectors relevant to the current stock. This is used to
+generate random events in the game.
+ticks_generated: number of ticks generated for this stock
+underlying_stock: name of the real-world stock that prices are derived from
+first_tick_index: the index from the stock data that corresponds to the first price generated
+past_values: stock values that have been generated
+next_values: next stock values
+
+pending_orders: orders that are stil pending
+fulfilled_orders: order that have been fulfilled
+'''
+class Stock(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    stock_name = models.CharField(max_length=256, default="Stock XYZ")
+    company_name = models.CharField(max_length=256, default="Company XYZ")
+    description = models.TextField(default="Default stock description")
+    current_price = models.DecimalField(default=0, decimal_places=2, max_digits=20)
+    industries = ArrayField(models.CharField(max_length=256), blank=True, default=list)
+
+    ticks_generated = models.BigIntegerField(default=0)
+    underlying_stock = models.CharField(max_length=256, default="")
+    first_tick_index = models.BigIntegerField(default=-1)
+
+    buy_orders = models.JSONField(default=dict)
+    sell_orders = models.JSONField(default=dict)
+
+    past_values = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
+    next_values = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
+
+    pending_orders = models.ManyToManyField(Order, related_name="pending_orders")
+    fulfilled_orders = models.ManyToManyField(Order, related_name="fulfilled_orders")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "stock_name": self.stock_name,
+            "company_name": self.company_name,
+            "description": self.description,
+            "current_price": self.current_price,
+            "industries": self.industries,
+            "ticks_generated": self.ticks_generated,
+            "underlying_stock": self.underlying_stock,
+            "first_tick_index": self.first_tick_index,
+            "buy_orders": self.buy_orders,
+            "sell_orders": self.sell_orders,
+            "next_values": self.next_values,
+            "past_values": self.past_values,
+            "pending_orders": [order.to_dict() for order in self.pending_orders.all()],
+            "fulfilled_orders": [order.to_dict() for order in self.fulfilled_orders.all()]
+        }
+    
 
 '''
 BaseGame
@@ -165,3 +235,7 @@ class BaseGame(models.Model):
             "time_to_next_tick": self.time_to_next_tick,
             "is_paused": self.is_paused
         }
+
+
+
+

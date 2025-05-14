@@ -1,3 +1,11 @@
+Handle buying/selling stock using the Order model
+- store gameid and stockid on the frontend
+- add orders to the pending orders field for a stock
+- to process an order in solo mode:
+  - update player's money/stock owned
+  - update order status, place order in pending_orders
+  - each game tick, create new function to process orders, moving fulfilled order in pending list to fulfilled list
+
 add multiplier to stock values (for stocks that don't move much; could implement randomness/volatility here)
 toggle on create game screen for toggling random events on/off
 

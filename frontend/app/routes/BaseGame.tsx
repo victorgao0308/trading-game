@@ -126,9 +126,10 @@ const BaseGame = () => {
   // change between current price of stock and price at start of day
   const [stockChange, setStockChange] = useState<Decimal>(Decimal(0));
 
-
   // indicates whether game id is valid or not
   const [isInvalidGame, setIsInvalidGame] = useState<boolean>(false);
+
+
 
   // toggle generation of data
   // if toggling on, add event listener
@@ -153,7 +154,8 @@ const BaseGame = () => {
     // load in the game
     try {
       const response = await axios.get(`${web_url}/get-game-manager/`);
-      let pastValues = response.data.game_manager[gameId!].stock.past_values;
+      let pastValues = response.data.game_manager[gameId].stock.past_values;
+      console.log(response.data.game_manager[gameId])
 
       const dayNumber = Math.max(
         Math.floor((pastValues.length - 11) / NUMTICKSPERDAY) + 1,
@@ -539,7 +541,7 @@ const BaseGame = () => {
             e.preventDefault();
           }
         }}
-        disabled={gameId === "" || isResuming || isBetweenDays}
+        disabled={gameId === "" || isResuming || isBetweenDays || isInvalidGame}
       >
         {isGeneratingData ? "Stop Data Generation (SpaceBar)" : "Start Data Generation (SpaceBar)"}
       </Button>
