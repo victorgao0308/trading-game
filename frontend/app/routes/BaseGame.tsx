@@ -108,7 +108,7 @@ const BaseGame = () => {
 
   // current broker mode, either "Buy" or "Sell"
   // default is "Buy"
-  const [brokerMode, setBrokerMode] = useState<string>("Buy");
+  const brokerMode = useRef<string>("Buy");
 
   // flag to indicate if broker event listener is added
   const brokerListenerAdded = useRef(false);
@@ -421,7 +421,7 @@ const BaseGame = () => {
       setBrokerText((prev) => {
         if (prev.length > 0) {
           const amount = parseInt(prev);
-          const adjustedAmount = brokerMode === "Sell" ? -amount : amount;
+          const adjustedAmount = brokerMode.current === "Sell" ? -amount : amount;
           console.log(adjustedAmount, data[data.length - 1].value);
           (async () => {
             try {
@@ -457,13 +457,13 @@ const BaseGame = () => {
     }
 
     if (e.key === "b" || e.key === "+") {
-      setBrokerMode("Buy");
+      brokerMode.current = "Buy";
       setBrokerBackgroundColor("bg-green-800/20");
       return;
     }
 
     if (e.key === "s" || e.key === "-") {
-      setBrokerMode("Sell");
+      brokerMode.current = "Sell";
       setBrokerBackgroundColor("bg-red-800/20");
       return;
     }
@@ -727,7 +727,7 @@ const BaseGame = () => {
         >
           <h1
             className={`text-[156px]  ${
-              brokerMode === "Buy" ? "text-green-500/40" : "text-red-500/40"
+              brokerMode.current === "Buy" ? "text-green-500/40" : "text-red-500/40"
             } font-bold`}
           >
             {brokerText}
