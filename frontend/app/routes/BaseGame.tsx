@@ -9,7 +9,6 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
 
 import {
   Alert,
@@ -36,6 +35,11 @@ interface DataPoint {
   value: string;
 }
 
+interface Player {
+  id: string;
+  role: string;
+}
+
 // global game variables
 let NUMTICKSPERDAY: number = -1;
 let TIMEBETWEENTICKS: number = -1;
@@ -48,6 +52,8 @@ const FAKEDATA: DataPoint[] = [];
 
 const BaseGame = () => {
   const [gameId, setGameId] = useState<string>("");
+  const [stockId, setStockId] = useState<string>("");
+  const [players, setPlayers] = useState<Player[]>([]);
 
   // array to hold price of stock
   const [data, setData] = useState<DataPoint[]>(FAKEDATA);
@@ -129,8 +135,6 @@ const BaseGame = () => {
   // indicates whether game id is valid or not
   const [isInvalidGame, setIsInvalidGame] = useState<boolean>(false);
 
-
-
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
@@ -155,8 +159,16 @@ const BaseGame = () => {
     try {
       const response = await axios.get(`${web_url}/get-game-manager/`);
       let pastValues = response.data.game_manager[gameId].stock.past_values;
-      console.log(response.data.game_manager[gameId])
+      console.log(response.data.game_manager[gameId]);
+      setStockId(response.data.game_manager[gameId].stock.id);
 
+      response.data.game_manager[gameId].players.forEach((player: Player) => {
+        const newPlayer: Player = {
+          id: player.id,
+          role: player.role,
+        };
+        setPlayers((prev) => [...prev, newPlayer]);
+      });
       const dayNumber = Math.max(
         Math.floor((pastValues.length - 11) / NUMTICKSPERDAY) + 1,
         1
@@ -385,7 +397,7 @@ const BaseGame = () => {
     }
 
     const url = window.location.href;
-    const urlParts = url.split('/'); 
+    const urlParts = url.split("/");
     const id = urlParts[urlParts.length - 1];
     setGameId(id);
     const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
@@ -401,7 +413,7 @@ const BaseGame = () => {
     if (gameId !== "") {
       loadBaseGame();
     }
-  }, [gameId])
+  }, [gameId]);
 
   // handle broker text
   const handleBrokerText = (e: any) => {
@@ -501,7 +513,24 @@ const BaseGame = () => {
       </h1>
 
       <h1>
-        Game Id: {gameId !== "" ? gameId : <CircularProgress size={20} />}
+        Game ID: {gameId !== "" ? gameId : <CircularProgress size={20} />}
+      </h1>
+
+      <h1>
+        Stock ID: {stockId !== "" ? stockId : <CircularProgress size={20} />}
+      </h1>
+
+      <h1>
+        Players:{" "}
+        {players.length !== 0 ? (
+          players.map((player) => (
+            <div>
+              ID: {player.id}, Role: {player.role}
+            </div>
+          ))
+        ) : (
+          <CircularProgress size={20} />
+        )}
       </h1>
 
       <h1>
@@ -543,7 +572,9 @@ const BaseGame = () => {
         }}
         disabled={gameId === "" || isResuming || isBetweenDays || isInvalidGame}
       >
-        {isGeneratingData ? "Stop Data Generation (SpaceBar)" : "Start Data Generation (SpaceBar)"}
+        {isGeneratingData
+          ? "Stop Data Generation (SpaceBar)"
+          : "Start Data Generation (SpaceBar)"}
       </Button>
 
       <div style={{ width: "47.5%", height: 400 }}>

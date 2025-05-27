@@ -19,7 +19,9 @@ def getNextPriceSolo(game_id):
     if stock == None:
         return -1
 
-    new_price = stock.next_values[stock.ticks_generated]
+    new_price = stock.next_values[0]
+
+    stock.next_values = stock.next_values[1:]
 
     stock.current_price = new_price
 

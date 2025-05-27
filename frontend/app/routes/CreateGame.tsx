@@ -374,7 +374,6 @@ const CreateGame = () => {
       `${web_url}/register-base-game/${gameId}/`
     );
     navigate(`/game/${gameId}`);
-    setIsLoadingGame(false);
   };
 
   return (

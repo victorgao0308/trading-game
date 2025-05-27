@@ -235,7 +235,3 @@ class BaseGame(models.Model):
             "time_to_next_tick": self.time_to_next_tick,
             "is_paused": self.is_paused
         }
-
-
-
-

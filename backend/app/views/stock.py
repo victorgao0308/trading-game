@@ -1,4 +1,4 @@
-from ..models import Stock, Order, Player
+from ..models import Stock, Order, Player, BaseGame
 import random
 import json
 import os
@@ -66,16 +66,19 @@ def create_stock(seed, total_ticks):
 
     return stock, initial_prices
 
-# creates a new order
+# creates a new order in a base game
 @api_view(['POST'])
-def create_order(request):
+def create_base_order(request):
     order_type = request.data.get('order_type')
     player_id = request.data.get('player_id')
     timestamp = request.data.get('timestamp')
     quantity = request.data.get('quantity')
     price = request.data.get('price')
+    game_id = request.data.get('game_id')
+    stock_id = request.data.get('stock_id')
 
-    if order_type is None or player_id is None or timestamp is None or quantity is None or price is None:
+    if order_type is None or player_id is None or timestamp is None or \
+       quantity is None or price is None or game_id is None or stock_id is None:
         return Response({
         "error": "invalid parameters"
         }, status=status.HTTP_400_BAD_REQUEST)
@@ -83,6 +86,14 @@ def create_order(request):
 
     order = Order()
     player = Player.objects.get(id=player_id)
+    game = BaseGame.objects.get(id=game_id)
+    stock = Stock.objects.get(id=stock_id)
+
+    if player is None or game is None or stock is None:
+        return Response({
+        "error": "player, game, or stock do not exist"
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
     order.from_player = player
     order.type = order_type
     order.timestamp = timestamp
