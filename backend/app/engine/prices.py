@@ -29,6 +29,12 @@ def getNextPriceSolo(game_id):
 
     stock.past_values.append(stock.current_price)
 
+
+    # move orders from pending to fulfilled
+    fulfilled_orders = stock.pending_orders.all()
+    stock.fulfilled_orders.add(*fulfilled_orders)
+    stock.pending_orders.clear()
+
     stock.save()
 
     return stock.current_price

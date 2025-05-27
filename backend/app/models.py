@@ -100,6 +100,8 @@ STATUS_PENDING: order has been fulfilled
 STATUS_FULFILLED: order has been fulfilled & cannot be changed
 STATUS_CANCELLED: order has been cancelled
 
+Orders can only be cancelled by the user if they are in STATUS_PLACED status
+
 Orders with status STATUS_PLACED or STATUS_PENDING are placed on a stock's pending_orders field. Orders stored in this field
 are deleted if the game window gets reloaded. Stocks get transitioned from STATUS_PENDING to STATUS_FULFILLED in the game
 tick immediately after when the order has been fulfilled and transitioned to STATUS_PENDING.

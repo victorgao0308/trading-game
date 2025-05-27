@@ -15,6 +15,7 @@ def create_base_game(request):
     num_players = request.data.get('num_players')
     total_ticks = request.data.get('total_ticks')
     seed = request.data.get('seed')
+    starting_cash = request.data.get('starting_cash')
 
     # generate a random seed if no seed provided
     if seed is None or seed == "":
@@ -23,7 +24,7 @@ def create_base_game(request):
 
 
     stock, initial_prices = create_stock(seed, total_ticks)
-    player = create_player(Player.ROLE_PLAYER)
+    player = create_player(Player.ROLE_PLAYER, starting_cash)
     if player is None:
         return Response({
         "error": "Error with player creation"    

@@ -367,6 +367,7 @@ const CreateGame = () => {
     const createResponse = await axios.post(`${web_url}/create-base-game/`, {
       seed: seed,
       total_ticks: parseInt(numTicksPerDay) * parseInt(numTradingDays),
+      starting_cash: startingCash
     });
     const gameId = createResponse.data.base_game.id;
     localStorage.setItem("gameId", gameId);

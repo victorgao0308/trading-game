@@ -416,40 +416,64 @@ const BaseGame = () => {
   }, [gameId]);
 
   // handle broker text
-  const handleBrokerText = (e: any) => {
-    // complete transaction
-    // only execute transaction if there is text in the broker
+  const handleBrokerText = async (e: any) => {
     if (e.key === "Enter") {
       setBrokerText((prev) => {
         if (prev.length > 0) {
-          setBrokerBackgroundColor("bg-yellow-800/20");
-          console.log("execute trade");
+          const amount = parseInt(prev);
+          const adjustedAmount = brokerMode === "Sell" ? -amount : amount;
+          console.log(adjustedAmount, data[data.length - 1].value);
+          (async () => {
+            try {
+              const response = await axios.post(
+                `${web_url}/create-base-order/`,
+                {
+                  order_type: 0,
+                  player_id: players[0].id,
+                  game_id: gameId,
+                  stock_id: stockId,
+                  timestamp: new Date().toISOString(),
+                  quantity: adjustedAmount,
+                  price: parseFloat(data[data.length - 1].value),
+                }
+              );
+              console.log(response.data);
+              setBrokerBackgroundColor("bg-yellow-800/20");
+            } catch (e) {
+              console.log(e);
+            }
+          })();
+
           return "";
         }
         return prev;
       });
+      return;
     }
 
     if (e.key === "Backspace") {
       setBrokerText((prev) => prev.slice(0, -1));
+      return;
     }
 
     if (e.key === "b" || e.key === "+") {
       setBrokerMode("Buy");
       setBrokerBackgroundColor("bg-green-800/20");
+      return;
     }
 
     if (e.key === "s" || e.key === "-") {
       setBrokerMode("Sell");
       setBrokerBackgroundColor("bg-red-800/20");
+      return;
     }
-    // invalid key inputted
+
+    // Allow only numeric keys
     if (e.key < "0" || e.key > "9") {
       return;
     }
 
-    // update broker text
-    // ignore leading 0's
+    // Append number if not leading 0
     setBrokerText((prev) => {
       if (!(prev.length === 0 && e.key === "0")) {
         return prev + e.key;
@@ -524,7 +548,7 @@ const BaseGame = () => {
         Players:{" "}
         {players.length !== 0 ? (
           players.map((player) => (
-            <div>
+            <div key={player.id}>
               ID: {player.id}, Role: {player.role}
             </div>
           ))

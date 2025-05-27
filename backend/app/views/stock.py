@@ -7,7 +7,9 @@ from bitarray import bitarray
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from app.tasks import handle_buy_stock_solo
+from app.tasks import handle_buy_stock_solo, SUCCESS
+from django.core.exceptions import ObjectDoesNotExist
+
 
 
 def create_stock(seed, total_ticks):
@@ -77,6 +79,8 @@ def create_base_order(request):
     game_id = request.data.get('game_id')
     stock_id = request.data.get('stock_id')
 
+    print(order_type, player_id, timestamp, quantity)
+
     if order_type is None or player_id is None or timestamp is None or \
        quantity is None or price is None or game_id is None or stock_id is None:
         return Response({
@@ -85,42 +89,50 @@ def create_base_order(request):
     
 
     order = Order()
-    player = Player.objects.get(id=player_id)
-    game = BaseGame.objects.get(id=game_id)
-    stock = Stock.objects.get(id=stock_id)
 
-    if player is None or game is None or stock is None:
+    player, stock = None, None
+
+    try:
+        player = Player.objects.get(id=player_id)
+        stock = Stock.objects.get(id=stock_id)
+    except ObjectDoesNotExist:
         return Response({
-        "error": "player, game, or stock do not exist"
+        "error": "player or stock does not exist"
         }, status=status.HTTP_400_BAD_REQUEST)
+
     
     order.from_player = player
     order.type = order_type
     order.timestamp = timestamp
     order.quantity = quantity
     order.price = price
-
     order.save()
-    return Response({
-    "success": "Order created successfully",
-    "order": order.to_dict()
-    }, status=status.HTTP_200_OK)
 
+    # solo mode orders get handled immediately
+    if order_type == Order.TYPE_SOLO:
+        # send request to celery
+        if handle_buy_stock_solo(order, stock) == SUCCESS:
+            return Response({
+            "success": "Order Placed",
+            "order": order.to_dict(),
+            "player": player.to_dict(),
+            "stock": stock.to_dict()
+            }, status=status.HTTP_200_OK)
+        
+        else:
+            return Response({
+            "error": "an error occurred while placing an order",
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-# purchase a stock in solo mode
-# player always buys/sells from the system player in solo mode
-# handle with the order model
-@api_view(['POST'])
-def buy_stock_solo(request):
-    
+    else:
 
-    # send request to celery
-    #handle_buy_stock_solo()
-
-
-    return Response({
-        #"player": player.to_dict()
+        return Response({
+        "success": "Order created successfully",
+        "order": order.to_dict()
         }, status=status.HTTP_200_OK)
+
+
+
 
 
 
