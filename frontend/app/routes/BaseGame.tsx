@@ -22,7 +22,13 @@ import {
   DialogActions,
 } from "@mui/material";
 
-import { ArrowDropUp, ArrowDropDown } from "@mui/icons-material";
+import {
+  ArrowDropUp,
+  ArrowDropDown,
+  PlayCircleRounded,
+} from "@mui/icons-material";
+
+import GameInfoModal from "~/components/GameInfoModal";
 
 import axios from "axios";
 
@@ -159,7 +165,6 @@ const BaseGame = () => {
     try {
       const response = await axios.get(`${web_url}/get-game-manager/`);
       let pastValues = response.data.game_manager[gameId].stock.past_values;
-      console.log(response.data.game_manager[gameId]);
       setStockId(response.data.game_manager[gameId].stock.id);
 
       response.data.game_manager[gameId].players.forEach((player: Player) => {
@@ -421,7 +426,8 @@ const BaseGame = () => {
       setBrokerText((prev) => {
         if (prev.length > 0) {
           const amount = parseInt(prev);
-          const adjustedAmount = brokerMode.current === "Sell" ? -amount : amount;
+          const adjustedAmount =
+            brokerMode.current === "Sell" ? -amount : amount;
           console.log(adjustedAmount, data[data.length - 1].value);
           (async () => {
             try {
@@ -491,6 +497,15 @@ const BaseGame = () => {
     }
   }, [brokerBackgroundColor]);
 
+
+
+  // tick formatter for the line graph
+  const formatNumber = (tick:number) => {
+    if (tick >= 1e6) return `${(tick / 1e6).toFixed(2)}M`;
+    if (tick >= 1e3) return `${(tick / 1e3).toFixed(2)}K`;
+    return tick.toFixed(2);
+  };
+
   return (
     <>
       <div className="absolute right-0 w-1/3 h-1/2 border-1">
@@ -505,7 +520,7 @@ const BaseGame = () => {
         <h1>Stocks Owned: {stocksOwned}</h1>
       </div>
 
-      <h1>
+      <h1 className="ml-2">
         <div>
           Current Price:{" "}
           {data.length >= 1 ? (
@@ -536,28 +551,7 @@ const BaseGame = () => {
         </div>
       </h1>
 
-      <h1>
-        Game ID: {gameId !== "" ? gameId : <CircularProgress size={20} />}
-      </h1>
-
-      <h1>
-        Stock ID: {stockId !== "" ? stockId : <CircularProgress size={20} />}
-      </h1>
-
-      <h1>
-        Players:{" "}
-        {players.length !== 0 ? (
-          players.map((player) => (
-            <div key={player.id}>
-              ID: {player.id}, Role: {player.role}
-            </div>
-          ))
-        ) : (
-          <CircularProgress size={20} />
-        )}
-      </h1>
-
-      <h1>
+      <h1 className="ml-2">
         Ticks Generated:{" "}
         {ticksGenerated.current != -1 ? (
           ticksGenerated.current
@@ -566,7 +560,7 @@ const BaseGame = () => {
         )}
       </h1>
 
-      <h1>
+      <h1 className="ml-2">
         Time Between Ticks:{" "}
         {TIMEBETWEENTICKS != -1 ? (
           TIMEBETWEENTICKS / 1000 + " second(s)"
@@ -575,17 +569,19 @@ const BaseGame = () => {
         )}
       </h1>
 
-      <h1>
+      <h1 className="ml-2">
         Ticks Per Day:{" "}
         {NUMTICKSPERDAY != -1 ? NUMTICKSPERDAY : <CircularProgress size={20} />}
       </h1>
 
-      <h1>
+      <h1 className="ml-2">
         Trading Day{" "}
         {curTradingDay != -1 ? curTradingDay : <CircularProgress size={20} />}{" "}
         of{" "}
         {NUMTRADINGDAYS != -1 ? NUMTRADINGDAYS : <CircularProgress size={20} />}
       </h1>
+
+      <GameInfoModal gameId={gameId} stockId={stockId} players={players} />
 
       <Button
         onClick={toggleDataGeneration}
@@ -601,7 +597,7 @@ const BaseGame = () => {
           : "Start Data Generation (SpaceBar)"}
       </Button>
 
-      <div style={{ width: "47.5%", height: 400 }}>
+      <div style={{ width: "47.5%", height: 400}}>
         <ResponsiveContainer
           width="100%"
           height="100%"
@@ -643,10 +639,10 @@ const BaseGame = () => {
 
               <YAxis
                 domain={[
-                  Math.round(minValue.current * 0.9 * 100) / 100,
-                  Math.round(maxValue.current * 1.1 * 100) / 100,
+                  (Math.round(minValue.current * 0.9 * 100) / 100),
+                  (Math.round(maxValue.current * 1.1 * 100) / 100),
                 ]}
-                tickFormatter={(value) => value.toFixed(2)}
+                tickFormatter={formatNumber}
               />
 
               {isGeneratingData ? <></> : <Tooltip />}
@@ -727,7 +723,9 @@ const BaseGame = () => {
         >
           <h1
             className={`text-[156px]  ${
-              brokerMode.current === "Buy" ? "text-green-500/40" : "text-red-500/40"
+              brokerMode.current === "Buy"
+                ? "text-green-500/40"
+                : "text-red-500/40"
             } font-bold`}
           >
             {brokerText}
