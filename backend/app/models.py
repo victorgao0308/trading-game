@@ -125,10 +125,10 @@ class Order(models.Model):
     STATUS_FULFILLED = 2
     STATUS_CANCELLED = 3
     STATUS_CHOICES = [
-        (STATUS_PLACED, "Order has been placed"),
-        (STATUS_PENDING, "Order has been fulfilled and is pending"),
-        (STATUS_FULFILLED, "Order has been fulfilled and cannot be changed"),
-        (STATUS_CANCELLED, "Order has been cancelled")
+        (STATUS_PLACED, "Order placed"),
+        (STATUS_PENDING, "Order pending"),
+        (STATUS_FULFILLED, "Order fulfilled"),
+        (STATUS_CANCELLED, "Order cancelled")
     ]
     type = models.IntegerField(choices=TYPE_CHOICES, default = TYPE_SOLO)
     status = models.IntegerField(choices=STATUS_CHOICES, default = STATUS_PLACED)

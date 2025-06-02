@@ -9,7 +9,6 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useState, useEffect, useRef } from "react";
-
 import {
   Alert,
   Button,
@@ -21,27 +20,21 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-
-import {
-  ArrowDropUp,
-  ArrowDropDown,
-  PlayCircleRounded,
-} from "@mui/icons-material";
-
-import GameInfoModal from "~/components/GameInfoModal";
-
+import { ArrowDropUp, ArrowDropDown } from "@mui/icons-material";
 import axios from "axios";
-
 import web_url from "web-url";
-
 import Decimal from "decimal.js";
+import GameInfoModal from "~/components/GameInfoModal";
+import OrderStatusList from "~/components/OrderStatusList";
 
 interface DataPoint {
   time: number;
   value: string;
 }
 
-interface Player {
+import type { Order } from "~/components/OrderStatus";
+
+export interface Player {
   id: string;
   role: string;
 }
@@ -428,7 +421,6 @@ const BaseGame = () => {
           const amount = parseInt(prev);
           const adjustedAmount =
             brokerMode.current === "Sell" ? -amount : amount;
-          console.log(adjustedAmount, data[data.length - 1].value);
           (async () => {
             try {
               const response = await axios.post(
@@ -497,21 +489,37 @@ const BaseGame = () => {
     }
   }, [brokerBackgroundColor]);
 
-
-
   // tick formatter for the line graph
-  const formatNumber = (tick:number) => {
+  const formatNumber = (tick: number) => {
     if (tick >= 1e6) return `${(tick / 1e6).toFixed(2)}M`;
     if (tick >= 1e3) return `${(tick / 1e3).toFixed(2)}K`;
     return tick.toFixed(2);
   };
 
+  const orders: Order[] = [
+    { id: "1", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "2", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString()},
+    { id: "3", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "4", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "5", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "6", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "7", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "8", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "9", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "10", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+    { id: "11", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString()},
+    { id: "12", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
+  ];
+
   return (
     <>
-      <div className="absolute right-0 w-1/3 h-1/2 border-1">
-        recent transactions
-      </div>
+      {isSettingUp ? (
+        <CircularProgress size={100} className="my-auto" />
+      ) : (
+        <OrderStatusList orders={orders} />
+      )}
 
+      
       <div className="absolute left-1/2 w-1/7">
         <h1>
           Cash:{" "}
@@ -519,7 +527,6 @@ const BaseGame = () => {
         </h1>
         <h1>Stocks Owned: {stocksOwned}</h1>
       </div>
-
       <h1 className="ml-2">
         <div>
           Current Price:{" "}
@@ -550,7 +557,6 @@ const BaseGame = () => {
           )}
         </div>
       </h1>
-
       <h1 className="ml-2">
         Ticks Generated:{" "}
         {ticksGenerated.current != -1 ? (
@@ -559,7 +565,6 @@ const BaseGame = () => {
           <CircularProgress size={20} />
         )}
       </h1>
-
       <h1 className="ml-2">
         Time Between Ticks:{" "}
         {TIMEBETWEENTICKS != -1 ? (
@@ -568,21 +573,17 @@ const BaseGame = () => {
           <CircularProgress size={20} />
         )}
       </h1>
-
       <h1 className="ml-2">
         Ticks Per Day:{" "}
         {NUMTICKSPERDAY != -1 ? NUMTICKSPERDAY : <CircularProgress size={20} />}
       </h1>
-
       <h1 className="ml-2">
         Trading Day{" "}
         {curTradingDay != -1 ? curTradingDay : <CircularProgress size={20} />}{" "}
         of{" "}
         {NUMTRADINGDAYS != -1 ? NUMTRADINGDAYS : <CircularProgress size={20} />}
       </h1>
-
       <GameInfoModal gameId={gameId} stockId={stockId} players={players} />
-
       <Button
         onClick={toggleDataGeneration}
         onKeyDown={(e) => {
@@ -596,8 +597,7 @@ const BaseGame = () => {
           ? "Stop Data Generation (SpaceBar)"
           : "Start Data Generation (SpaceBar)"}
       </Button>
-
-      <div style={{ width: "47.5%", height: 400}}>
+      <div style={{ width: "47.5%", height: 400 }}>
         <ResponsiveContainer
           width="100%"
           height="100%"
@@ -639,8 +639,8 @@ const BaseGame = () => {
 
               <YAxis
                 domain={[
-                  (Math.round(minValue.current * 0.9 * 100) / 100),
-                  (Math.round(maxValue.current * 1.1 * 100) / 100),
+                  Math.round(minValue.current * 0.9 * 100) / 100,
+                  Math.round(maxValue.current * 1.1 * 100) / 100,
                 ]}
                 tickFormatter={formatNumber}
               />
@@ -669,7 +669,6 @@ const BaseGame = () => {
           )}
         </ResponsiveContainer>
       </div>
-
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={isBetweenDays}
@@ -688,7 +687,6 @@ const BaseGame = () => {
           Trading day ended. Press any key to continue to the summary screen.
         </Alert>
       </Snackbar>
-
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={isInvalidGame}
@@ -707,7 +705,6 @@ const BaseGame = () => {
           Game ID is invalid. Please try again, or create a new game.
         </Alert>
       </Snackbar>
-
       <Dialog open={openSummaryWindow}>
         <DialogTitle>Summary of Trading Day</DialogTitle>
         <DialogContent>Blah blah blah</DialogContent>
