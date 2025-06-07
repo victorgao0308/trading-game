@@ -32,7 +32,7 @@ def handle_buy_stock_solo(order, stock):
 
     player.save()
 
-    order.status = Order.STATUS_PENDING
+    order.status = Order.STATUS_FILLED
     order.save()
 
     stock.pending_orders.add(order)

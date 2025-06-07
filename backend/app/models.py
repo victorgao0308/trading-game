@@ -96,8 +96,8 @@ TYPE_SOLO: orders placed in solo mode, these get executed immediately
 
 Status: status of order
 STATUS_PLACED: order has been placed
-STATUS_PENDING: order has been fulfilled
-STATUS_FULFILLED: order has been fulfilled & cannot be changed
+STATUS_FILLED: order has been fulfilled
+STATUS_CONFIRMED: order has been fulfilled & cannot be changed
 STATUS_CANCELLED: order has been cancelled
 
 Orders can only be cancelled by the user if they are in STATUS_PLACED status
@@ -121,14 +121,14 @@ class Order(models.Model):
     ]
 
     STATUS_PLACED = 0
-    STATUS_PENDING = 1
-    STATUS_FULFILLED = 2
+    STATUS_FILLED = 1
+    STATUS_CONFIRMED = 2
     STATUS_CANCELLED = 3
     STATUS_CHOICES = [
-        (STATUS_PLACED, "Order placed"),
-        (STATUS_PENDING, "Order pending"),
-        (STATUS_FULFILLED, "Order fulfilled"),
-        (STATUS_CANCELLED, "Order cancelled")
+        (STATUS_PLACED, "Order Placed"),
+        (STATUS_FILLED, "Order Filled"),
+        (STATUS_CONFIRMED, "Order Confirmed"),
+        (STATUS_CANCELLED, "Order Cancelled")
     ]
     type = models.IntegerField(choices=TYPE_CHOICES, default = TYPE_SOLO)
     status = models.IntegerField(choices=STATUS_CHOICES, default = STATUS_PLACED)

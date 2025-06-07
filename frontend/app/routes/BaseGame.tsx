@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type SetStateAction } from "react";
 import {
   Alert,
   Button,
@@ -43,7 +43,6 @@ export interface Player {
 let NUMTICKSPERDAY: number = -1;
 let TIMEBETWEENTICKS: number = -1;
 let NUMTRADINGDAYS: number = -1;
-let CASH: number = -1;
 let VOLATILITY: number = -1;
 let SEED: string = "";
 
@@ -134,6 +133,13 @@ const BaseGame = () => {
   // indicates whether game id is valid or not
   const [isInvalidGame, setIsInvalidGame] = useState<boolean>(false);
 
+  const [orders, setOrders] = useState<Order[]>([]);
+
+
+  const [cash, setCash] = useState<number>(0);
+
+  const currentPrice = useRef<number>(0);
+
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
@@ -151,21 +157,26 @@ const BaseGame = () => {
     });
   };
 
-  // creates a new base game
   const loadBaseGame = async () => {
     setIsSettingUp(true);
     // load in the game
     try {
       const response = await axios.get(`${web_url}/get-game-manager/`);
-      let pastValues = response.data.game_manager[gameId].stock.past_values;
-      setStockId(response.data.game_manager[gameId].stock.id);
+      const game = response.data.game_manager[gameId];
+      let pastValues = game.stock.past_values;
+      setStockId(game.stock.id);
 
-      response.data.game_manager[gameId].players.forEach((player: Player) => {
+      setCash(game.players[0].money);
+
+      response.data.game_manager[gameId].players.forEach((player:any) => {
         const newPlayer: Player = {
           id: player.id,
           role: player.role,
         };
         setPlayers((prev) => [...prev, newPlayer]);
+        if (player.role === "Player") {
+          setStocksOwned(parseInt(player.owned_stocks[game.stock.id]))
+        }
       });
       const dayNumber = Math.max(
         Math.floor((pastValues.length - 11) / NUMTICKSPERDAY) + 1,
@@ -201,7 +212,7 @@ const BaseGame = () => {
       }
 
       setStockChange(Decimal(lastPrice).minus(Decimal(firstPriceOfDay)));
-
+      currentPrice.current = parseFloat(lastPrice);
       setIsSettingUp(false);
 
       if (
@@ -304,6 +315,7 @@ const BaseGame = () => {
         timeInTick.current = 0;
 
         ticksGenerated.current += 1;
+        currentPrice.current = next_price;
 
         // end of trading day
         if (ticksGenerated.current % NUMTICKSPERDAY == 0) {
@@ -401,7 +413,7 @@ const BaseGame = () => {
     const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
     NUMTICKSPERDAY = parseInt(gameSetup.numTicksPerDay);
     NUMTRADINGDAYS = parseInt(gameSetup.numTradingDays);
-    CASH = parseFloat(gameSetup.startingCash);
+    setCash(parseFloat(gameSetup.startingCash));
     TIMEBETWEENTICKS = parseFloat(gameSetup.timeBetweenTicks) * 1000;
     VOLATILITY = parseFloat(gameSetup.volatility);
     SEED = gameSetup.seed;
@@ -415,12 +427,18 @@ const BaseGame = () => {
 
   // handle broker text
   const handleBrokerText = async (e: any) => {
+    // don't allow usage of broker when game is paused
+    if (isPaused.current) {
+      return;
+    }
     if (e.key === "Enter") {
       setBrokerText((prev) => {
         if (prev.length > 0) {
           const amount = parseInt(prev);
           const adjustedAmount =
             brokerMode.current === "Sell" ? -amount : amount;
+          const price = currentPrice.current;
+
           (async () => {
             try {
               const response = await axios.post(
@@ -432,11 +450,26 @@ const BaseGame = () => {
                   stock_id: stockId,
                   timestamp: new Date().toISOString(),
                   quantity: adjustedAmount,
-                  price: parseFloat(data[data.length - 1].value),
+                  price: price,
                 }
               );
-              console.log(response.data);
+              const order = response.data.order;
+              const title =
+                (order.quantity > 0 ? "Buy " : "Sell ") +
+                Math.abs(order.quantity) +
+                " @ $" +
+                order.price.toFixed(2);
+              const newOrder = {
+                id: order.id,
+                status: order.status,
+                title: title,
+                timestamp: Date().toString(),
+              };
+              // make newest order the first in the list, so that it appears at the top
+              setOrders((prev) => [newOrder, ...prev]);
               setBrokerBackgroundColor("bg-yellow-800/20");
+              setCash((prev) => prev - adjustedAmount * price);
+              setStocksOwned((prev) => prev + adjustedAmount);
             } catch (e) {
               console.log(e);
             }
@@ -496,21 +529,6 @@ const BaseGame = () => {
     return tick.toFixed(2);
   };
 
-  const orders: Order[] = [
-    { id: "1", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "2", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString()},
-    { id: "3", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "4", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "5", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "6", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "7", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "8", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "9", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "10", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-    { id: "11", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString()},
-    { id: "12", status: "Pending", title: "Buy 200 @ $1.12", timestamp: Date().toString() },
-  ];
-
   return (
     <>
       {isSettingUp ? (
@@ -519,19 +537,18 @@ const BaseGame = () => {
         <OrderStatusList orders={orders} />
       )}
 
-      
       <div className="absolute left-1/2 w-1/7">
         <h1>
           Cash:{" "}
-          {CASH != -1 ? "$" + CASH.toFixed(2) : <CircularProgress size={20} />}
+          {!isSettingUp ? "$" + cash.toFixed(2) : <CircularProgress size={20} />}
         </h1>
         <h1>Stocks Owned: {stocksOwned}</h1>
       </div>
       <h1 className="ml-2">
         <div>
           Current Price:{" "}
-          {data.length >= 1 ? (
-            "$" + data[data.length - 1].value
+          {!isSettingUp ? (
+            "$" + currentPrice.current.toFixed(2)
           ) : (
             <CircularProgress size={20} />
           )}
@@ -559,7 +576,7 @@ const BaseGame = () => {
       </h1>
       <h1 className="ml-2">
         Ticks Generated:{" "}
-        {ticksGenerated.current != -1 ? (
+        {!isSettingUp ? (
           ticksGenerated.current
         ) : (
           <CircularProgress size={20} />
@@ -567,7 +584,7 @@ const BaseGame = () => {
       </h1>
       <h1 className="ml-2">
         Time Between Ticks:{" "}
-        {TIMEBETWEENTICKS != -1 ? (
+        {!isSettingUp ? (
           TIMEBETWEENTICKS / 1000 + " second(s)"
         ) : (
           <CircularProgress size={20} />
@@ -575,13 +592,13 @@ const BaseGame = () => {
       </h1>
       <h1 className="ml-2">
         Ticks Per Day:{" "}
-        {NUMTICKSPERDAY != -1 ? NUMTICKSPERDAY : <CircularProgress size={20} />}
+        {!isSettingUp ? NUMTICKSPERDAY : <CircularProgress size={20} />}
       </h1>
       <h1 className="ml-2">
         Trading Day{" "}
-        {curTradingDay != -1 ? curTradingDay : <CircularProgress size={20} />}{" "}
+        {!isSettingUp ? curTradingDay : <CircularProgress size={20} />}{" "}
         of{" "}
-        {NUMTRADINGDAYS != -1 ? NUMTRADINGDAYS : <CircularProgress size={20} />}
+        {!isSettingUp ? NUMTRADINGDAYS : <CircularProgress size={20} />}
       </h1>
       <GameInfoModal gameId={gameId} stockId={stockId} players={players} />
       <Button
