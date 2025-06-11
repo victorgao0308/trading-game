@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Modal, Box, CircularProgress, Button } from "@mui/material";
-import type { Player } from "../routes/BaseGame";
+import type { Player } from "../routes/BaseGameSolo";
 
 type GameInfoModalProps = {
   gameId: string;

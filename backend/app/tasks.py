@@ -12,13 +12,24 @@ def my_test_task():
 
 
 # handles purchasing of a stock by a player in solo mode
+# this function will move the order into the pending orders list of the stock object, and update the status of the order
+# the process_buy_stock_solo object, which will get triggered on the next game tick, will apply changes to the models
 @shared_task
 def handle_buy_stock_solo(order, stock):
+    order.status = Order.STATUS_FILLED
+    order.save()
+    stock.pending_orders.add(order)
+    stock.save()
+    return SUCCESS
+
+
+# this function runs every game tick, processing all the orders in the pending orders list of the stock object
+@shared_task
+def process_buy_stock_solo(order, stock):
     player = order.from_player
     quantity = order.quantity
     price = order.price
     stock_id = str(stock.id)
-
 
     total_cost = Decimal(str(quantity * price)).quantize(Decimal("0.01"))
 
@@ -32,10 +43,7 @@ def handle_buy_stock_solo(order, stock):
 
     player.save()
 
-    order.status = Order.STATUS_FILLED
+    order.status = Order.STATUS_CONFIRMED
     order.save()
-
-    stock.pending_orders.add(order)
-    stock.save()
 
     return SUCCESS

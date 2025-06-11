@@ -48,7 +48,7 @@ let SEED: string = "";
 
 const FAKEDATA: DataPoint[] = [];
 
-const BaseGame = () => {
+const BaseGameSolo = () => {
   const [gameId, setGameId] = useState<string>("");
   const [stockId, setStockId] = useState<string>("");
   const [players, setPlayers] = useState<Player[]>([]);
@@ -135,14 +135,20 @@ const BaseGame = () => {
 
   const [orders, setOrders] = useState<Order[]>([]);
 
-
   const [cash, setCash] = useState<number>(0);
 
   const currentPrice = useRef<number>(0);
 
+  // number of pending orders that have been deleted when loading a game in
+  const [ordersDeleted, setOrdersDeleted] = useState<number>(0);
+
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
+    if (ordersDeleted != 0) {
+      setOrdersDeleted(0);
+    }
+
     setIsGeneratingData((prev) => {
       if (!prev) {
         if (!brokerListenerAdded.current) {
@@ -166,16 +172,30 @@ const BaseGame = () => {
       let pastValues = game.stock.past_values;
       setStockId(game.stock.id);
 
+      // if stock has pending orders, remove them
+      try {
+        const response = await axios.delete(
+          `${web_url}/remove-pending-orders/${game.stock.id}/`
+        );
+        setOrdersDeleted(response.data.orders_deleted);
+
+        setTimeout(() => {
+          setOrdersDeleted(0);
+        }, 10000);
+      } catch (error) {
+        console.error("Error posting data:", error);
+      }
+
       setCash(game.players[0].money);
 
-      response.data.game_manager[gameId].players.forEach((player:any) => {
+      response.data.game_manager[gameId].players.forEach((player: any) => {
         const newPlayer: Player = {
           id: player.id,
           role: player.role,
         };
         setPlayers((prev) => [...prev, newPlayer]);
         if (player.role === "Player") {
-          setStocksOwned(parseInt(player.owned_stocks[game.stock.id]))
+          setStocksOwned(parseInt(player.owned_stocks[game.stock.id]) || 0);
         }
       });
       const dayNumber = Math.max(
@@ -233,6 +253,16 @@ const BaseGame = () => {
       setIsInvalidGame(true);
       ticksGenerated.current = 0;
     }
+
+    // // event listener to toggle data generation when space bar is pressed
+    // document.addEventListener("keydown", (e: any) => {
+    //   if (gameId === "" || isResuming || isBetweenDays || isInvalidGame) {
+    //     return;
+    //   }
+    //   if (e.key === " ") {
+    //     toggleDataGeneration();
+    //   }
+    // });
   };
 
   // gets next data point
@@ -453,6 +483,7 @@ const BaseGame = () => {
                   price: price,
                 }
               );
+              console.log(response.data);
               const order = response.data.order;
               const title =
                 (order.quantity > 0 ? "Buy " : "Sell ") +
@@ -540,7 +571,11 @@ const BaseGame = () => {
       <div className="absolute left-1/2 w-1/7">
         <h1>
           Cash:{" "}
-          {!isSettingUp ? "$" + cash.toFixed(2) : <CircularProgress size={20} />}
+          {!isSettingUp ? (
+            "$" + cash.toFixed(2)
+          ) : (
+            <CircularProgress size={20} />
+          )}
         </h1>
         <h1>Stocks Owned: {stocksOwned}</h1>
       </div>
@@ -576,11 +611,7 @@ const BaseGame = () => {
       </h1>
       <h1 className="ml-2">
         Ticks Generated:{" "}
-        {!isSettingUp ? (
-          ticksGenerated.current
-        ) : (
-          <CircularProgress size={20} />
-        )}
+        {!isSettingUp ? ticksGenerated.current : <CircularProgress size={20} />}
       </h1>
       <h1 className="ml-2">
         Time Between Ticks:{" "}
@@ -596,8 +627,7 @@ const BaseGame = () => {
       </h1>
       <h1 className="ml-2">
         Trading Day{" "}
-        {!isSettingUp ? curTradingDay : <CircularProgress size={20} />}{" "}
-        of{" "}
+        {!isSettingUp ? curTradingDay : <CircularProgress size={20} />} of{" "}
         {!isSettingUp ? NUMTRADINGDAYS : <CircularProgress size={20} />}
       </h1>
       <GameInfoModal gameId={gameId} stockId={stockId} players={players} />
@@ -686,6 +716,31 @@ const BaseGame = () => {
           )}
         </ResponsiveContainer>
       </div>
+
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={ordersDeleted > 0}
+        message="Trading day ended."
+        slots={{ transition: Slide }}
+        slotProps={{
+          transition: {
+            direction: "left",
+          },
+        }}
+      >
+        <Alert
+          severity="warning"
+          sx={{ width: "400px", fontSize: "1.1rem", py: 2 }}
+        >
+          {ordersDeleted == 1
+            ? "1 pending order was deleted."
+            : `${ordersDeleted} pending orders were deleted.`}{" "}
+          {
+            "Orders get put into pending status when they are filled, and get put into completed status at the game tick immediately after when the order was placed."
+          }
+        </Alert>
+      </Snackbar>
+
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={isBetweenDays}
@@ -752,4 +807,4 @@ const BaseGame = () => {
   );
 };
 
-export default BaseGame;
+export default BaseGameSolo;

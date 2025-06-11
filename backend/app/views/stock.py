@@ -11,7 +11,7 @@ from app.tasks import handle_buy_stock_solo, SUCCESS
 from django.core.exceptions import ObjectDoesNotExist
 
 
-
+# creates a stock
 def create_stock(seed, total_ticks):
     stock = Stock()
 
@@ -63,7 +63,6 @@ def create_stock(seed, total_ticks):
     stock.description = data["description"]
     stock.industries = data["industries"]
     
-
     stock.save()
 
     return stock, initial_prices
@@ -78,8 +77,6 @@ def create_base_order(request):
     price = request.data.get('price')
     game_id = request.data.get('game_id')
     stock_id = request.data.get('stock_id')
-
-    print(order_type, player_id, timestamp, quantity)
 
     if order_type is None or player_id is None or timestamp is None or \
        quantity is None or price is None or game_id is None or stock_id is None:
@@ -133,10 +130,22 @@ def create_base_order(request):
 
 
 
+# removes all the pending orders in the given stock
+# this will trigger if the player loads in a game and had orders that have not been processed yet
+# returns number of orders that have been cleared
+@api_view(['DELETE'])
+def remove_pending_orders(request, stock_id):
+    try:
+        stock = Stock.objects.get(id=stock_id)
+    except ObjectDoesNotExist:
+        return Response({
+        "error": "stock does not exist"
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-
-
-    
+    order_count = stock.pending_orders.count()
+    stock.pending_orders.clear()
+    return Response({
+        "success": f'Successfully deleted {order_count} orders',
+        "orders_deleted": order_count
+        }, status=status.HTTP_200_OK)

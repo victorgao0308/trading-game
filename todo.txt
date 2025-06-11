@@ -1,5 +1,4 @@
-update frontend to reflect order status, and player money/stocks owned
-
+update UI when orders get completed
 
 store game settings in the database and load settings from the database?
 Figure out some way to attach a priority queue of Orders to a Stock

@@ -1,4 +1,6 @@
 from ..models import GameManager
+from app.tasks import process_buy_stock_solo, SUCCESS
+
 
 '''
 Gets next price in solo mode.
@@ -30,8 +32,12 @@ def getNextPriceSolo(game_id):
     stock.past_values.append(stock.current_price)
 
 
-    # move orders from pending to fulfilled
+    # move orders from pending to fulfilled, and process them via celery
     fulfilled_orders = stock.pending_orders.all()
+
+    for order in fulfilled_orders:
+        process_buy_stock_solo(order, stock)
+
     stock.fulfilled_orders.add(*fulfilled_orders)
     stock.pending_orders.clear()
 

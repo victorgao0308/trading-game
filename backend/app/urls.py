@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from .views.game import create_base_game, delete_base_game, get_game_manager, register_base_game, get_next_base_game_price_solo
 from .views.game import create_tutorial, pause_base_game, resume_base_game, remove_game_from_manager
-from .views.stock import create_base_order
+from .views.stock import create_base_order, remove_pending_orders
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -30,6 +30,7 @@ urlpatterns = [
     path('pause-base-game/<str:game_id>/', pause_base_game, name='pause-base-game'),
     path('resume-base-game/<str:game_id>/', resume_base_game, name="resume-base-game"),
     path('remove-game-from-manager/<str:game_id>/', remove_game_from_manager, name='remove-game-from-manager'),
-    path('create-base-order/', create_base_order, name='create-base-order')
+    path('create-base-order/', create_base_order, name='create-base-order'),
+    path('remove-pending-orders/<str:stock_id>/', remove_pending_orders, name='remove-pending-orders')
     ]
 

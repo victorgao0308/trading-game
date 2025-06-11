@@ -232,7 +232,6 @@ class BaseGame(models.Model):
             "num_players": self.num_players,
             "players": [player.to_dict() for player in self.players.all()],
             "seed": self.seed,
-            # "request_queue": self.request_queue,
             "stock": self.stock.to_dict(),
             "time_to_next_tick": self.time_to_next_tick,
             "is_paused": self.is_paused
