@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { useState, useEffect, useRef, type SetStateAction } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Alert,
   Button,
@@ -26,6 +26,7 @@ import web_url from "web-url";
 import Decimal from "decimal.js";
 import GameInfoModal from "~/components/GameInfoModal";
 import OrderStatusList from "~/components/OrderStatusList";
+import debounce from "lodash/debounce";
 
 interface DataPoint {
   time: number;
@@ -51,7 +52,7 @@ const FAKEDATA: DataPoint[] = [];
 const BaseGameSolo = () => {
   const [gameId, setGameId] = useState<string>("");
   const [stockId, setStockId] = useState<string>("");
-  const [players, setPlayers] = useState<Player[]>([]);
+  const players = useRef<Player[]>([]);
 
   // array to hold price of stock
   const [data, setData] = useState<DataPoint[]>(FAKEDATA);
@@ -142,6 +143,8 @@ const BaseGameSolo = () => {
   // number of pending orders that have been deleted when loading a game in
   const [ordersDeleted, setOrdersDeleted] = useState<number>(0);
 
+  const isListenerAttached = useRef(false);
+
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
@@ -150,14 +153,12 @@ const BaseGameSolo = () => {
     }
 
     setIsGeneratingData((prev) => {
-      if (!prev) {
-        if (!brokerListenerAdded.current) {
-          document.addEventListener("keydown", handleBrokerText);
-          brokerListenerAdded.current = true;
-        } else {
-          document.removeEventListener("keydown", handleBrokerText);
-          brokerListenerAdded.current = false;
-        }
+      if (!prev && !isListenerAttached.current) {
+        document.addEventListener("keydown", handleBrokerText);
+        isListenerAttached.current = true;
+      } else if (prev && isListenerAttached.current) {
+        document.removeEventListener("keydown", handleBrokerText);
+        isListenerAttached.current = false;
       }
       return !prev;
     });
@@ -193,7 +194,7 @@ const BaseGameSolo = () => {
           id: player.id,
           role: player.role,
         };
-        setPlayers((prev) => [...prev, newPlayer]);
+        players.current.push(newPlayer);
         if (player.role === "Player") {
           setStocksOwned(parseInt(player.owned_stocks[game.stock.id]) || 0);
         }
@@ -461,6 +462,7 @@ const BaseGameSolo = () => {
     if (isPaused.current) {
       return;
     }
+
     if (e.key === "Enter") {
       setBrokerText((prev) => {
         if (prev.length > 0) {
@@ -469,13 +471,15 @@ const BaseGameSolo = () => {
             brokerMode.current === "Sell" ? -amount : amount;
           const price = currentPrice.current;
 
+          console.log(players.current[0].id, gameId, stockId);
+
           (async () => {
             try {
               const response = await axios.post(
                 `${web_url}/create-base-order/`,
                 {
                   order_type: 0,
-                  player_id: players[0].id,
+                  player_id: players.current[0].id,
                   game_id: gameId,
                   stock_id: stockId,
                   timestamp: new Date().toISOString(),
@@ -568,69 +572,89 @@ const BaseGameSolo = () => {
         <OrderStatusList orders={orders} />
       )}
 
-      <div className="absolute left-1/2 w-1/7">
-        <h1>
-          Cash:{" "}
-          {!isSettingUp ? (
-            "$" + cash.toFixed(2)
-          ) : (
-            <CircularProgress size={20} />
-          )}
-        </h1>
-        <h1>Stocks Owned: {stocksOwned}</h1>
-      </div>
-      <h1 className="ml-2">
+      <div className="flex flex-row">
         <div>
-          Current Price:{" "}
-          {!isSettingUp ? (
-            "$" + currentPrice.current.toFixed(2)
-          ) : (
-            <CircularProgress size={20} />
-          )}
-          {stockStatus === "Above" ? (
-            <ArrowDropUp className="text-green-600" />
-          ) : stockStatus === "Below" ? (
-            <ArrowDropDown className="text-red-600" />
-          ) : (
-            <></>
-          )}
-          {stockStatus !== "Neutral" ? (
-            <span
-              className={
-                stockStatus === "Above" ? "text-green-600" : "text-red-600"
-              }
-            >
-              {stockChange.toString() !== "0"
-                ? "$" + stockChange.toFixed(2)
-                : ""}
-            </span>
-          ) : (
-            <></>
-          )}
+          <h1 className="ml-2">
+            <div>
+              Current Price:{" "}
+              {!isSettingUp ? (
+                "$" + currentPrice.current.toFixed(2)
+              ) : (
+                <CircularProgress size={20} />
+              )}
+              {stockStatus === "Above" ? (
+                <ArrowDropUp className="text-green-600" />
+              ) : stockStatus === "Below" ? (
+                <ArrowDropDown className="text-red-600" />
+              ) : (
+                <></>
+              )}
+              {stockStatus !== "Neutral" ? (
+                <span
+                  className={
+                    stockStatus === "Above" ? "text-green-600" : "text-red-600"
+                  }
+                >
+                  {stockChange.toString() !== "0"
+                    ? "$" + stockChange.toFixed(2)
+                    : ""}
+                </span>
+              ) : (
+                <></>
+              )}
+            </div>
+          </h1>
+          <h1 className="ml-2">
+            Ticks Generated:{" "}
+            {!isSettingUp ? (
+              ticksGenerated.current
+            ) : (
+              <CircularProgress size={20} />
+            )}
+          </h1>
+          <h1 className="ml-2">
+            Time Between Ticks:{" "}
+            {!isSettingUp ? (
+              TIMEBETWEENTICKS / 1000 + " second(s)"
+            ) : (
+              <CircularProgress size={20} />
+            )}
+          </h1>
+          <h1 className="ml-2">
+            Ticks Per Day:{" "}
+            {!isSettingUp ? NUMTICKSPERDAY : <CircularProgress size={20} />}
+          </h1>
+          <h1 className="ml-2">
+            Trading Day{" "}
+            {!isSettingUp ? curTradingDay : <CircularProgress size={20} />} of{" "}
+            {!isSettingUp ? NUMTRADINGDAYS : <CircularProgress size={20} />}
+          </h1>
         </div>
-      </h1>
-      <h1 className="ml-2">
-        Ticks Generated:{" "}
-        {!isSettingUp ? ticksGenerated.current : <CircularProgress size={20} />}
-      </h1>
-      <h1 className="ml-2">
-        Time Between Ticks:{" "}
-        {!isSettingUp ? (
-          TIMEBETWEENTICKS / 1000 + " second(s)"
-        ) : (
-          <CircularProgress size={20} />
-        )}
-      </h1>
-      <h1 className="ml-2">
-        Ticks Per Day:{" "}
-        {!isSettingUp ? NUMTICKSPERDAY : <CircularProgress size={20} />}
-      </h1>
-      <h1 className="ml-2">
-        Trading Day{" "}
-        {!isSettingUp ? curTradingDay : <CircularProgress size={20} />} of{" "}
-        {!isSettingUp ? NUMTRADINGDAYS : <CircularProgress size={20} />}
-      </h1>
-      <GameInfoModal gameId={gameId} stockId={stockId} players={players} />
+
+        <div className="ml-10">
+          <h1>
+            Cash:{" "}
+            {!isSettingUp ? (
+              "$" + cash.toFixed(2)
+            ) : (
+              <CircularProgress size={20} />
+            )}
+          </h1>
+          <h1>
+            Stocks Owned: {stocksOwned} (worth $
+            {(stocksOwned * currentPrice.current).toFixed(2)})
+          </h1>
+          <h1>
+            Total Net Worth: $
+            {(cash + stocksOwned * currentPrice.current).toFixed(2)}
+          </h1>
+        </div>
+      </div>
+      <GameInfoModal
+        gameId={gameId}
+        stockId={stockId}
+        players={players.current}
+      />
       <Button
         onClick={toggleDataGeneration}
         onKeyDown={(e) => {
