@@ -26,7 +26,6 @@ import web_url from "web-url";
 import Decimal from "decimal.js";
 import GameInfoModal from "~/components/GameInfoModal";
 import OrderStatusList from "~/components/OrderStatusList";
-import debounce from "lodash/debounce";
 
 interface DataPoint {
   time: number;
@@ -47,15 +46,14 @@ let NUMTRADINGDAYS: number = -1;
 let VOLATILITY: number = -1;
 let SEED: string = "";
 
-const FAKEDATA: DataPoint[] = [];
 
 const BaseGameSolo = () => {
   const [gameId, setGameId] = useState<string>("");
-  const [stockId, setStockId] = useState<string>("");
+  const stockId = useRef<string>("");
   const players = useRef<Player[]>([]);
 
   // array to hold price of stock
-  const [data, setData] = useState<DataPoint[]>(FAKEDATA);
+  const [data, setData] = useState<DataPoint[]>([]);
 
   // state to control if data is being generated
   const [isGeneratingData, setIsGeneratingData] = useState<boolean>(false);
@@ -109,9 +107,6 @@ const BaseGameSolo = () => {
   // default is "Buy"
   const brokerMode = useRef<string>("Buy");
 
-  // flag to indicate if broker event listener is added
-  const brokerListenerAdded = useRef(false);
-
   // background color of the broker
   // contains a tailwind class name
   const [brokerBackgroundColor, setBrokerBackgroundColor] =
@@ -143,25 +138,13 @@ const BaseGameSolo = () => {
   // number of pending orders that have been deleted when loading a game in
   const [ordersDeleted, setOrdersDeleted] = useState<number>(0);
 
-  const isListenerAttached = useRef(false);
-
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
     if (ordersDeleted != 0) {
       setOrdersDeleted(0);
     }
-
-    setIsGeneratingData((prev) => {
-      if (!prev && !isListenerAttached.current) {
-        document.addEventListener("keydown", handleBrokerText);
-        isListenerAttached.current = true;
-      } else if (prev && isListenerAttached.current) {
-        document.removeEventListener("keydown", handleBrokerText);
-        isListenerAttached.current = false;
-      }
-      return !prev;
-    });
+    setIsGeneratingData((prev) => !prev);
   };
 
   const loadBaseGame = async () => {
@@ -171,7 +154,7 @@ const BaseGameSolo = () => {
       const response = await axios.get(`${web_url}/get-game-manager/`);
       const game = response.data.game_manager[gameId];
       let pastValues = game.stock.past_values;
-      setStockId(game.stock.id);
+      stockId.current = game.stock.id;
 
       // if stock has pending orders, remove them
       try {
@@ -255,12 +238,17 @@ const BaseGameSolo = () => {
       ticksGenerated.current = 0;
     }
 
-    // // event listener to toggle data generation when space bar is pressed
+    // once game loads, attach event listener for the broker
+    document.addEventListener("keydown", handleBrokerText);
+
+    // event listener to toggle data generation when space bar is pressed
     // document.addEventListener("keydown", (e: any) => {
-    //   if (gameId === "" || isResuming || isBetweenDays || isInvalidGame) {
-    //     return;
-    //   }
-    //   if (e.key === " ") {
+    //   // this mimics the "disabled" behavior of the toggle data generation button
+
+    //   if (
+    //     !(gameId === "" || isResuming || isBetweenDays || isInvalidGame) &&
+    //     e.key === " "
+    //   ) {
     //     toggleDataGeneration();
     //   }
     // });
@@ -306,7 +294,7 @@ const BaseGameSolo = () => {
   // handle generation of data
   useEffect(() => {
     // no game registered yet
-    if (!gameId || gameId == "") {
+    if (!gameId || gameId === "") {
       return;
     }
 
@@ -316,7 +304,6 @@ const BaseGameSolo = () => {
 
       // generate a new data point
       const generatePoint = async () => {
-        // don't generate if game is currently paused
         const currentTime = Date.now();
         const next_price = await getNextDataPoint();
 
@@ -416,6 +403,7 @@ const BaseGameSolo = () => {
   // handles going to next trading day
   // gets 10 last data points from the previous day to use as the beginning 10 points and
   // updates meta information
+  // resets broker
 
   const goToNextDay = () => {
     setOpenSummaryWindow(false);
@@ -429,6 +417,9 @@ const BaseGameSolo = () => {
 
     setCurTradingDay((prev) => prev + 1);
     setData(lastTen);
+    setBrokerText("");
+    brokerMode.current = "Buy";
+    setBrokerBackgroundColor("bg-green-800/20");
   };
 
   // initial setup
@@ -471,8 +462,6 @@ const BaseGameSolo = () => {
             brokerMode.current === "Sell" ? -amount : amount;
           const price = currentPrice.current;
 
-          console.log(players.current[0].id, gameId, stockId);
-
           (async () => {
             try {
               const response = await axios.post(
@@ -481,7 +470,7 @@ const BaseGameSolo = () => {
                   order_type: 0,
                   player_id: players.current[0].id,
                   game_id: gameId,
-                  stock_id: stockId,
+                  stock_id: stockId.current,
                   timestamp: new Date().toISOString(),
                   quantity: adjustedAmount,
                   price: price,
@@ -567,7 +556,10 @@ const BaseGameSolo = () => {
   return (
     <>
       {isSettingUp ? (
-        <CircularProgress size={100} className="my-auto" />
+        <CircularProgress
+          size={100}
+          className="my-auto absolute top-0 right-30"
+        />
       ) : (
         <OrderStatusList orders={orders} />
       )}
@@ -652,15 +644,13 @@ const BaseGameSolo = () => {
       </div>
       <GameInfoModal
         gameId={gameId}
-        stockId={stockId}
+        stockId={stockId.current}
         players={players.current}
       />
       <Button
         onClick={toggleDataGeneration}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-          }
+          e.preventDefault();
         }}
         disabled={gameId === "" || isResuming || isBetweenDays || isInvalidGame}
       >

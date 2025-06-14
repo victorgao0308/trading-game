@@ -16,9 +16,6 @@ add polling on frontend to get updates on transactions made by the user
 
 prevent mobile from accessing game (or change UI on mobile?)
 
-work on solo mode
-    endpoint to buy stock & sell stock
-    when reloading a game, undo events up until the last tick
 
 
 have tutorial encompass regular mode as well (or separate tutorials for separet gamemodes?)
