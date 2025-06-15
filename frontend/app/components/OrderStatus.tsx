@@ -15,7 +15,18 @@ const OrderStatus: React.FC<Order> = ({ id, status, title, timestamp }) => {
   const handleClose = () => setOpen(false);
   return (
     <>
-      <div className={`bg-white shadow-md rounded-md p-2 mb-2 w-64 border border-gray-200 m-1 transition-transform duration-50 hover:scale-105 cursor-pointer ${status == "Order Filled" ? "!bg-lime-500/33" : ""} `} onClick={handleOpen}>
+      <div
+        className={`bg-white shadow-md rounded-md p-2 mb-2 w-64 border border-gray-200 m-1 transition-transform duration-50 hover:scale-105 cursor-pointer ${
+          status == "Order Filled"
+            ? "!bg-lime-500/50"
+            : status === "Order Confirmed"
+            ? "!bg-green-500/50"
+            : status === "Hide Order"
+            ? "hidden"
+            : ""
+        } `}
+        onClick={handleOpen}
+      >
         <div className="font-semibold text-sm">{title}</div>
         <div className="text-xs text-gray-600">Status: {status}</div>
       </div>

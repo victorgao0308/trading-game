@@ -46,7 +46,6 @@ let NUMTRADINGDAYS: number = -1;
 let VOLATILITY: number = -1;
 let SEED: string = "";
 
-
 const BaseGameSolo = () => {
   const [gameId, setGameId] = useState<string>("");
   const stockId = useRef<string>("");
@@ -155,6 +154,8 @@ const BaseGameSolo = () => {
       const game = response.data.game_manager[gameId];
       let pastValues = game.stock.past_values;
       stockId.current = game.stock.id;
+
+      loadOrders(game.stock.fulfilled_orders);
 
       // if stock has pending orders, remove them
       try {
@@ -291,6 +292,25 @@ const BaseGameSolo = () => {
     document.addEventListener("keydown", openSummary);
   };
 
+  // transform the "fufilled orders" field into list of Order objects
+  // since pending orders get removed, we only need to worry about the fulfilled ones
+  const loadOrders = (fufilledOrders: any) => {
+    fufilledOrders.forEach((order: any) => {
+      const title =
+        (order.quantity > 0 ? "Buy " : "Sell ") +
+        Math.abs(order.quantity) +
+        " @ $" +
+        order.price.toFixed(2);
+      const newOrder = {
+        id: order.id,
+        status: order.status,
+        title: title,
+        timestamp: order.timestamp,
+      };
+      setOrders((prev) => [newOrder, ...prev]);
+    });
+  };
+
   // handle generation of data
   useEffect(() => {
     // no game registered yet
@@ -307,6 +327,14 @@ const BaseGameSolo = () => {
         const currentTime = Date.now();
         const next_price = await getNextDataPoint();
 
+        // update orders, from filled to confirmed, and confirmed to hidden (doesn't appear on list of recent orders)
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.status === "Order Filled"
+              ? { ...order, status: "Order Confirmed" }
+              : order
+          )
+        );
         minValue.current = Math.min(minValue.current, next_price);
         maxValue.current = Math.max(maxValue.current, next_price);
         setData((prevData) => {
@@ -793,7 +821,8 @@ const BaseGameSolo = () => {
       </Snackbar>
       <Dialog open={openSummaryWindow}>
         <DialogTitle>Summary of Trading Day</DialogTitle>
-        <DialogContent>Blah blah blah</DialogContent>
+        todo
+
         <DialogActions>
           <Button onClick={goToNextDay}>Next Day</Button>
         </DialogActions>

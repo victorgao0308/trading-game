@@ -1,6 +1,7 @@
-update UI when orders get completed
-
 store game settings in the database and load settings from the database?
+
+
+implement summary of trading day (need some way to store the day an order was placed on)
 Figure out some way to attach a priority queue of Orders to a Stock
 
 need to do some refactoring
