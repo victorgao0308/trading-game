@@ -207,6 +207,52 @@ class Stock(models.Model):
         }
     
 
+
+# GameSettings
+# Holds the type of game, as well as the game's options
+# numBots and numMarketmakers are not applicable in solo modes
+class GameSettings(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    GAME_BASE_TUTORIAL = 0
+    GAME_BASE_SOLO = 1
+    GAME_BASE = 2
+    GAME_OPTIONS_TUTORIAL = 3
+    GAME_OPTIONS = 4
+
+    GAME_CHOICES = [
+        (GAME_BASE_TUTORIAL, "Tutorial for the base game"),
+        (GAME_BASE_SOLO, "Base game with a single player"),
+        (GAME_BASE, "Base game where player trades against bots"),
+        (GAME_OPTIONS_TUTORIAL, "Tutorial for options mode"),
+        (GAME_OPTIONS, "Game where player can trade options with bots")
+    ]
+
+    game_type = models.IntegerField(choices=GAME_CHOICES, default = GAME_BASE_SOLO)
+    num_bots = models.IntegerField(default=30)
+    num_market_makers = models.IntegerField(default=3)
+    num_trading_days = models.IntegerField(default=10)
+    num_ticks_per_day = models.IntegerField(default=20)
+    time_between_ticks = models.FloatField(default=1.5)
+    starting_cash = models.IntegerField(default=1000)
+    volatility = models.IntegerField(default=10)
+    seed = models.TextField(default="")
+
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "game_type": self.get_game_type_display(),
+            "num_bots": self.num_bots,
+            "num_market_makers": self.num_market_makers,
+            "num_trading_days": self.num_trading_days,
+            "num_ticks_per_day": self.num_ticks_per_day,
+            "time_between_ticks": self.time_between_ticks,
+            "starting_cash": self.starting_cash,
+            "volatility": self.volatility,
+            "seed": self.seed
+        }
+
+
 '''
 BaseGame
 Base game that includes one stock option
@@ -221,6 +267,7 @@ class BaseGame(models.Model):
     stock = models.ForeignKey(Stock, related_name="games", on_delete=models.CASCADE)
     time_to_next_tick = models.FloatField(default=-1)
     is_paused = models.BooleanField(default=True)
+    settings = models.ForeignKey(GameSettings, related_name="settings",  on_delete=models.CASCADE, default=None)
 
 
 
@@ -234,5 +281,6 @@ class BaseGame(models.Model):
             "seed": self.seed,
             "stock": self.stock.to_dict(),
             "time_to_next_tick": self.time_to_next_tick,
-            "is_paused": self.is_paused
+            "is_paused": self.is_paused,
+            "settings": self.settings.to_dict()
         }

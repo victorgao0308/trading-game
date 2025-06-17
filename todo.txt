@@ -1,4 +1,5 @@
-store game settings in the database and load settings from the database?
+make frontend use new GameSettings model
+deprecate seed field in BaseGame (use the one in GameSettings)
 
 
 implement summary of trading day (need some way to store the day an order was placed on)

@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from ..models import BaseGame, GameManager, Player
+from ..models import BaseGame, GameManager, Player, GameSettings
 from ..engine.prices import getNextPriceSolo
 from .player import create_player
 from .stock import create_stock
@@ -12,18 +12,40 @@ import random
 
 @api_view(['POST'])
 def create_base_game(request):
-    num_players = request.data.get('num_players')
-    total_ticks = request.data.get('total_ticks')
-    seed = request.data.get('seed')
-    starting_cash = request.data.get('starting_cash')
+    game_type = GameSettings.GAME_BASE_SOLO
+    num_bots = 0                 # default for solo game
+    num_market_makers = 0        # default for solo game
+    num_trading_days = request.data.get("num_trading_days")
+    num_ticks_per_day = request.data.get("num_ticks_per_day")
+    time_between_ticks = request.data.get("time_between_ticks")
+    starting_cash = request.data.get("starting_cash")
+    volatility = request.data.get("volatility")
+    seed = request.data.get("seed")
+
+
 
     # generate a random seed if no seed provided
     if seed is None or seed == "":
         characters = string.ascii_letters + string.digits
         seed = ''.join(random.choices(characters, k=16))
 
+    if num_trading_days is None or num_ticks_per_day is None or \
+    time_between_ticks is None or starting_cash is None or volatility is None: 
+        return Response({
+        "error": "Invalid parameters"    
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
 
-    stock, initial_prices = create_stock(seed, total_ticks)
+    # create settings
+    settings = GameSettings(game_type = game_type, num_bots = 0, num_market_makers = 0, 
+                            num_trading_days = num_trading_days, num_ticks_per_day = num_ticks_per_day,
+                            time_between_ticks = time_between_ticks, starting_cash = starting_cash,
+                            volatility = volatility, seed = seed)
+    
+    settings.save()
+
+
+    stock, initial_prices = create_stock(seed, num_trading_days * num_ticks_per_day)
     player = create_player(Player.ROLE_PLAYER, starting_cash)
     if player is None:
         return Response({
@@ -31,7 +53,7 @@ def create_base_game(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     base_game = BaseGame()
-    
+    base_game.settings = settings
     base_game.seed = seed
     base_game.stock = stock
     base_game.num_players = 1
@@ -40,8 +62,7 @@ def create_base_game(request):
     base_game.players.set([player])
 
 
-    if num_players is not None:
-        base_game.num_players = num_players
+    base_game.num_players = 1
 
     base_game.save()
 
