@@ -77,9 +77,11 @@ def create_base_order(request):
     price = request.data.get('price')
     game_id = request.data.get('game_id')
     stock_id = request.data.get('stock_id')
+    day_placed_on = request.data.get('day_placed_on')
 
     if order_type is None or player_id is None or timestamp is None or \
-       quantity is None or price is None or game_id is None or stock_id is None:
+       quantity is None or price is None or game_id is None or stock_id is None \
+        or day_placed_on is None:
         return Response({
         "error": "invalid parameters"
         }, status=status.HTTP_400_BAD_REQUEST)
@@ -103,6 +105,7 @@ def create_base_order(request):
     order.timestamp = timestamp
     order.quantity = quantity
     order.price = price
+    order.day_placed_on = day_placed_on
     order.save()
 
     # solo mode orders get handled immediately
@@ -148,4 +151,29 @@ def remove_pending_orders(request, stock_id):
     return Response({
         "success": f'Successfully deleted {order_count} orders',
         "orders_deleted": order_count
+        }, status=status.HTTP_200_OK)
+
+
+
+# returns all the orders placed on a certain day in solo mode
+@api_view(['POST'])
+def get_orders_placed_on_day(request):
+    stock_id = request.data.get("stock_id")
+    trading_day = request.data.get("trading_day")
+    try:
+        stock = Stock.objects.get(id=stock_id)
+    except ObjectDoesNotExist:
+        return Response({
+        "error": "stock does not exist"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+    orders = []
+    for order in stock.fulfilled_orders.all():
+        if order.day_placed_on == trading_day:
+            orders.append(order.to_dict())
+
+    return Response({
+        "success": f"Returned orders placed on day {trading_day}",
+        "orders": orders
         }, status=status.HTTP_200_OK)

@@ -97,7 +97,7 @@ const BaseGameSolo = () => {
   const [openSummaryWindow, setOpenSummaryWindow] = useState<boolean>(false);
 
   // tracks current trading day
-  const [curTradingDay, setCurTradingDay] = useState<number>(-1);
+  const curTradingDay = useRef<number>(0);
 
   // stock broker text
   const [brokerText, setBrokerText] = useState<string>("");
@@ -136,6 +136,9 @@ const BaseGameSolo = () => {
 
   // number of pending orders that have been deleted when loading a game in
   const [ordersDeleted, setOrdersDeleted] = useState<number>(0);
+
+  // list of orders that is used in the summary screen
+  const [summaryOrders, setSummaryOrders] = useState<Order[]>([]);
 
   // toggle generation of data
   // if toggling on, add event listener
@@ -194,7 +197,7 @@ const BaseGameSolo = () => {
         Math.floor((pastValues.length - 11) / NUMTICKSPERDAY) + 1,
         1
       );
-      setCurTradingDay(dayNumber);
+      curTradingDay.current = dayNumber;
       ticksGenerated.current = pastValues.length - 10;
       const startingIndex = (dayNumber - 1) * NUMTICKSPERDAY;
       pastValues = pastValues.slice(startingIndex);
@@ -240,7 +243,7 @@ const BaseGameSolo = () => {
         error
       );
       setData([{ time: 0, value: "0" }]);
-      setCurTradingDay(0);
+      curTradingDay.current = 0;
       setIsSettingUp(false);
       setIsInvalidGame(true);
       ticksGenerated.current = 0;
@@ -295,7 +298,35 @@ const BaseGameSolo = () => {
   };
 
   // handle end of trading day
-  const handleEndOfDay = () => {
+  const handleEndOfDay = async () => {
+    try {
+      const response = await axios.post(
+        `${web_url}/get-orders-placed-on-day/`,
+        {
+          stock_id: stockId.current,
+          trading_day: curTradingDay.current,
+        }
+      );
+
+      let orders: Order[] = [];
+      response.data.orders.forEach((order: any) => {
+        const title =
+          (order.quantity > 0 ? "Buy " : "Sell ") +
+          Math.abs(order.quantity) +
+          " @ $" +
+          order.price.toFixed(2);
+        const newOrder = {
+          id: order.id,
+          status: order.status,
+          title: title,
+          timestamp: order.timestamp,
+        };
+        orders.push(newOrder);
+      });
+      setSummaryOrders(orders);
+    } catch (error) {
+      console.error("Error posting data:", error);
+    }
     document.addEventListener("keydown", openSummary);
   };
 
@@ -347,7 +378,10 @@ const BaseGameSolo = () => {
         setData((prevData) => {
           const newPoint: DataPoint = {
             time:
-              prevData.length + 1 - 10 + (curTradingDay - 1) * NUMTICKSPERDAY,
+              prevData.length +
+              1 -
+              10 +
+              (curTradingDay.current - 1) * NUMTICKSPERDAY,
             value: next_price.toFixed(2),
           };
           return [...prevData, newPoint];
@@ -388,7 +422,7 @@ const BaseGameSolo = () => {
               `${web_url}/resume-base-game/${gameId}/`
             );
           } catch (error) {
-            console.error("Error posting data:", error);
+            console.error("Error fetching summary for trading day:", error);
           }
           setTimeout(async () => {
             generatePoint();
@@ -447,10 +481,10 @@ const BaseGameSolo = () => {
     const lastTen = data.slice(-10);
 
     for (let i = 0; i < 10; i++) {
-      lastTen[i].time = i - 9 + curTradingDay * NUMTICKSPERDAY;
+      lastTen[i].time = i - 9 + curTradingDay.current * NUMTICKSPERDAY;
     }
 
-    setCurTradingDay((prev) => prev + 1);
+    curTradingDay.current += 1;
     setData(lastTen);
     setBrokerText("");
     brokerMode.current = "Buy";
@@ -502,9 +536,9 @@ const BaseGameSolo = () => {
                   timestamp: new Date().toISOString(),
                   quantity: adjustedAmount,
                   price: price,
+                  day_placed_on: curTradingDay.current,
                 }
               );
-              console.log(response.data);
               const order = response.data.order;
               const title =
                 (order.quantity > 0 ? "Buy " : "Sell ") +
@@ -523,7 +557,7 @@ const BaseGameSolo = () => {
               setCash((prev) => prev - adjustedAmount * price);
               setStocksOwned((prev) => prev + adjustedAmount);
             } catch (e) {
-              console.log(e);
+              console.error(e);
             }
           })();
 
@@ -635,7 +669,7 @@ const BaseGameSolo = () => {
           <h1 className="ml-2">
             Time Between Ticks:{" "}
             {!isSettingUp ? (
-              (TIMEBETWEENTICKS / 1000) + " second(s)"
+              TIMEBETWEENTICKS / 1000 + " second(s)"
             ) : (
               <CircularProgress size={20} />
             )}
@@ -646,8 +680,12 @@ const BaseGameSolo = () => {
           </h1>
           <h1 className="ml-2">
             Trading Day{" "}
-            {!isSettingUp ? curTradingDay : <CircularProgress size={20} />} of{" "}
-            {!isSettingUp ? NUMTRADINGDAYS : <CircularProgress size={20} />}
+            {!isSettingUp ? (
+              curTradingDay.current
+            ) : (
+              <CircularProgress size={20} />
+            )}{" "}
+            of {!isSettingUp ? NUMTRADINGDAYS : <CircularProgress size={20} />}
           </h1>
         </div>
 
@@ -704,8 +742,8 @@ const BaseGameSolo = () => {
                 ticks={
                   data.length > 9
                     ? [
-                        -9 + (curTradingDay - 1) * NUMTICKSPERDAY,
-                        -5 + (curTradingDay - 1) * NUMTICKSPERDAY,
+                        -9 + (curTradingDay.current - 1) * NUMTICKSPERDAY,
+                        -5 + (curTradingDay.current - 1) * NUMTICKSPERDAY,
                       ]
                         .concat(
                           Array.from(
@@ -720,7 +758,7 @@ const BaseGameSolo = () => {
                         .concat([
                           data.length -
                             10 +
-                            (curTradingDay - 1) * NUMTICKSPERDAY,
+                            (curTradingDay.current - 1) * NUMTICKSPERDAY,
                         ])
                     : []
                 }
@@ -743,7 +781,7 @@ const BaseGameSolo = () => {
                 isAnimationActive={false}
               />
               <ReferenceLine
-                x={(curTradingDay - 1) * NUMTICKSPERDAY}
+                x={(curTradingDay.current - 1) * NUMTICKSPERDAY}
                 stroke="red"
                 strokeWidth={2}
                 strokeDasharray="3 3"
@@ -821,8 +859,10 @@ const BaseGameSolo = () => {
       </Snackbar>
       <Dialog open={openSummaryWindow}>
         <DialogTitle>Summary of Trading Day</DialogTitle>
-        todo
 
+        {summaryOrders.map((order) => (
+          <h1 key={order.id}>{order.title}</h1>
+        ))}
         <DialogActions>
           <Button onClick={goToNextDay}>Next Day</Button>
         </DialogActions>

@@ -112,6 +112,9 @@ timestamp: timestamp at which order was placed
 quantity: amount of stocks to purchase/sell, a non-zero integer; negative values reflect selling the stock
 price: in solo mode, price of stock at time of order, or in regular mode, price that user want to buy/sell at
 
+day_placed_on: what trading day the order was placed on
+day_confirmed_on: what trading day the order was confirmed on
+The day_placed_on and day_confirmed_on fields help provide data for the end of trading day summary screens
 '''
 class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -136,6 +139,9 @@ class Order(models.Model):
     timestamp = models.DateTimeField(default=timezone.now, editable=False)
     quantity = models.BigIntegerField()
     price = models.DecimalField(default=0, decimal_places=2, max_digits=20)
+    day_placed_on = models.IntegerField(default=0)
+    day_confirmed_on = models.IntegerField(default=0)
+
 
     def to_dict(self):
         return {
@@ -145,7 +151,9 @@ class Order(models.Model):
             "from_player": self.from_player.to_dict(),
             "timestamp": self.timestamp,
             "quantity": self.quantity,
-            "price": self.price
+            "price": self.price,
+            "day_placed_on": self.day_placed_on,
+            "day_confirmed_on": self.day_confirmed_on
         }
     
 

@@ -44,6 +44,7 @@ def process_buy_stock_solo(order, stock):
     player.save()
 
     order.status = Order.STATUS_CONFIRMED
+    order.day_confirmed_on = order.day_placed_on
     order.save()
 
     return SUCCESS
