@@ -62,16 +62,22 @@ const CreateGame = () => {
   const [numMMMessage, setNumMMMessage] = useState<string>("");
 
   const [numTradingDays, setNumTradingDays] = useState<string>("10");
-  const [numTradingDaysError, setNumTradingDaysError] = useState<boolean>(false);
-  const [numTradingDaysMessage, setNumTradingDaysMessage] = useState<string>("");
+  const [numTradingDaysError, setNumTradingDaysError] =
+    useState<boolean>(false);
+  const [numTradingDaysMessage, setNumTradingDaysMessage] =
+    useState<string>("");
 
   const [numTicksPerDay, setNumTicksPerDay] = useState<string>("20");
-  const [numTicksPerDayError, setNumTicksPerDayError] = useState<boolean>(false);
-  const [numTicksPerDayMessage, setNumTicksPerDayMessage] = useState<string>("");
+  const [numTicksPerDayError, setNumTicksPerDayError] =
+    useState<boolean>(false);
+  const [numTicksPerDayMessage, setNumTicksPerDayMessage] =
+    useState<string>("");
 
   const [timeBetweenTicks, setTimeBetweenTicks] = useState<string>("1.5");
-  const [timeBetweenTicksError, setTimeBetweenTicksError] = useState<boolean>(false);
-  const [timeBetweenTicksMessage, setTimeBetweenTicksMessage] = useState<string>("");
+  const [timeBetweenTicksError, setTimeBetweenTicksError] =
+    useState<boolean>(false);
+  const [timeBetweenTicksMessage, setTimeBetweenTicksMessage] =
+    useState<string>("");
 
   const [startingCash, setStartingCash] = useState<string>("1000");
   const [startingCashError, setStartingCashError] = useState<boolean>(false);
@@ -310,22 +316,6 @@ const CreateGame = () => {
       return;
     }
 
-    gameSetup.current = {
-      gameType: selectedIndex,
-      numTradingDays,
-      numTicksPerDay,
-      timeBetweenTicks,
-      startingCash,
-      volatility,
-      seed,
-      isTutorial,
-    };
-
-    if (selectedIndex == games.BASE_GAME_REGULAR) {
-      gameSetup.current.numBots = numBots;
-      gameSetup.current.numMM = numMM;
-    }
-
     // try to load in a previous game, if one exists
     const getPrevGame = async () => {
       const prevGameId = localStorage.getItem("gameId") || "";
@@ -338,7 +328,6 @@ const CreateGame = () => {
         setPrevGame(prevGame);
       } else {
         setIsLoadingGame(true);
-        localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
         await createNewGame();
       }
     };
@@ -365,12 +354,15 @@ const CreateGame = () => {
   // creates a new game, registers it, and navigates to the new page
   const createNewGame = async () => {
     const createResponse = await axios.post(`${web_url}/create-base-game/`, {
+      game_type: 1,
+      num_trading_days: parseInt(numTradingDays),
+      num_ticks_per_day: parseInt(numTicksPerDay),
+      time_between_ticks: parseFloat(timeBetweenTicks),
+      starting_cash: startingCash,
+      volatility: volatility,
       seed: seed,
-      total_ticks: parseInt(numTicksPerDay) * parseInt(numTradingDays),
-      starting_cash: startingCash
     });
     const gameId = createResponse.data.base_game.id;
-    localStorage.setItem("gameId", gameId);
     const registerReponse = await axios.post(
       `${web_url}/register-base-game/${gameId}/`
     );

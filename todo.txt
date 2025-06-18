@@ -1,8 +1,7 @@
-make frontend use new GameSettings model
 deprecate seed field in BaseGame (use the one in GameSettings)
-
-
 implement summary of trading day (need some way to store the day an order was placed on)
+
+
 Figure out some way to attach a priority queue of Orders to a Stock
 
 need to do some refactoring
@@ -20,7 +19,7 @@ prevent mobile from accessing game (or change UI on mobile?)
 
 
 
-have tutorial encompass regular mode as well (or separate tutorials for separet gamemodes?)
+have tutorial encompass regular mode as well (or separate tutorials for separate gamemodes?)
 
 remove console.log statements
 

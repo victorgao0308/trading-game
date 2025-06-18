@@ -154,6 +154,13 @@ const BaseGameSolo = () => {
       const game = response.data.game_manager[gameId];
       let pastValues = game.stock.past_values;
       stockId.current = game.stock.id;
+      const settings = game.settings;
+
+      TIMEBETWEENTICKS = settings.time_between_ticks * 1000;
+      NUMTICKSPERDAY = settings.num_ticks_per_day;
+      NUMTRADINGDAYS = settings.num_trading_days;
+      VOLATILITY = settings.volatility;
+      SEED = settings.seed;
 
       loadOrders(game.stock.fulfilled_orders);
 
@@ -460,13 +467,6 @@ const BaseGameSolo = () => {
     const urlParts = url.split("/");
     const id = urlParts[urlParts.length - 1];
     setGameId(id);
-    const gameSetup = JSON.parse(localStorage.getItem("gameSetup") || "");
-    NUMTICKSPERDAY = parseInt(gameSetup.numTicksPerDay);
-    NUMTRADINGDAYS = parseInt(gameSetup.numTradingDays);
-    setCash(parseFloat(gameSetup.startingCash));
-    TIMEBETWEENTICKS = parseFloat(gameSetup.timeBetweenTicks) * 1000;
-    VOLATILITY = parseFloat(gameSetup.volatility);
-    SEED = gameSetup.seed;
   }, []);
 
   useEffect(() => {
@@ -635,7 +635,7 @@ const BaseGameSolo = () => {
           <h1 className="ml-2">
             Time Between Ticks:{" "}
             {!isSettingUp ? (
-              TIMEBETWEENTICKS / 1000 + " second(s)"
+              (TIMEBETWEENTICKS / 1000) + " second(s)"
             ) : (
               <CircularProgress size={20} />
             )}
