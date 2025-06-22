@@ -368,6 +368,7 @@ const CreateGame = () => {
       const registerReponse = await axios.post(
         `${web_url}/register-base-game/${gameId}/`
       );
+       localStorage.setItem("gameId", gameId)
       navigate(`/game/${gameId}`);
     } else if (selectedIndex === games.BASE_GAME_REGULAR) {
       alert("regular base game");
