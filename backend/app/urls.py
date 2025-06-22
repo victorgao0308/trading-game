@@ -15,13 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views.game import create_base_game, delete_base_game, get_game_manager, register_base_game, get_next_base_game_price_solo
-from .views.game import create_tutorial, pause_base_game, resume_base_game, remove_game_from_manager
+from .views.game import create_base_game_solo, delete_base_game, get_game_manager, register_base_game, get_next_base_game_price_solo
+from .views.game import create_tutorial, pause_base_game, resume_base_game, remove_game_from_manager, create_base_game_regular
 from .views.stock import create_base_order, remove_pending_orders, get_orders_placed_on_day
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('create-base-game/', create_base_game, name='create-base-game'),
+    path('create-base-game-solo/', create_base_game_solo, name='create-base-game-solo'),
+    path('create-base-game-regular/', create_base_game_regular, name='create-base-game-regular'),
     path('delete-base-game/<str:game_id>/', delete_base_game, name='delete-base-game'),
     path('get-game-manager/', get_game_manager, name='get-game-manager'),
     path('register-base-game/<str:game_id>/', register_base_game, name='register-base-game'),

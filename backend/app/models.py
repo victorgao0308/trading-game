@@ -58,10 +58,11 @@ Player
 Player object; holds player id, player role, amount of money player, and player's owned stocks
 For players owned stocks, key is stock id and value is quantity owned
 3 roles:
-System: who the player makes transactions with in a solo game
+System: who the player makes transactions with in a solo game (not used currently)
 Player: the player
 Bot: bots in the game that the player is trading against
 
+play_style: used for bots to determine the style of play that they have
 '''
 class Player(models.Model):
     ROLE_SYSTEM = 0
@@ -76,6 +77,7 @@ class Player(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.IntegerField(choices=ROLE_CHOICES, default = ROLE_SYSTEM)
     money = models.DecimalField(default=0, decimal_places=2, max_digits=20)
+    play_style = models.IntegerField(default=0)
     owned_stocks = models.JSONField(default=dict)
 
     def to_dict(self):
@@ -83,6 +85,7 @@ class Player(models.Model):
             "id": self.id,
             "role": self.get_role_display(),
             "money": self.money,
+            "play_style": self.play_style,
             "owned_stocks": self.owned_stocks
         }
 
@@ -265,6 +268,17 @@ class GameSettings(models.Model):
 BaseGame
 Base game that includes one stock option
 
+Can be either a solo game or a regular game, governed by the settings field
+
+id: unique id associated with this game, this is used to fetch current running games in the game manager
+num_players: number of players associated with this game; will always be 1 in solo mode
+players: list of player objects associatd with the game
+seed: seed used to determine random events in the game
+stock: stock object associated with this game
+time_to_next_tick: amount of time left to the next game time; used when pausing/resuming the game
+is_paused: whether the game is paused or not
+settings: settings associated with the game
+
 '''
 class BaseGame(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -276,8 +290,6 @@ class BaseGame(models.Model):
     time_to_next_tick = models.FloatField(default=-1)
     is_paused = models.BooleanField(default=True)
     settings = models.ForeignKey(GameSettings, related_name="settings",  on_delete=models.CASCADE, default=None)
-
-
 
     def to_dict(self):
         return {

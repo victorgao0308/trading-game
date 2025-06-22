@@ -11,7 +11,7 @@ const OrderStatusList: React.FC<OrderList> = ({ orders }) => {
       <h1 className="text-xl font-bold mb-4 ml-2">Orders Made</h1>
       {orders.length === 0 ? (
         <h3 className="text-l mb-4 ml-2 font-bold text-gray-500">
-          No recent orders to show
+          No orders to show
         </h3>
       ) : (
         orders.map((order) => (

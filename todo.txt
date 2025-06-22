@@ -1,5 +1,8 @@
+handle the end of a game? (settle stocks owned into cash)
+
+have some way to clear the recent orders UI?
+
 deprecate seed field in BaseGame (use the one in GameSettings)
-implement summary of trading day (need some way to store the day an order was placed on)
 
 
 Figure out some way to attach a priority queue of Orders to a Stock
@@ -11,13 +14,11 @@ eventually, make docker spin up the frontend as well
 
 
 add multiplier to stock values (for stocks that don't move much; could implement randomness/volatility here)
-toggle on create game screen for toggling random events on/off
+
 
 add polling on frontend to get updates on transactions made by the user
 
 prevent mobile from accessing game (or change UI on mobile?)
-
-
 
 have tutorial encompass regular mode as well (or separate tutorials for separate gamemodes?)
 

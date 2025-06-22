@@ -134,7 +134,8 @@ const BaseGameSolo = () => {
 
   const currentPrice = useRef<number>(0);
 
-  // number of pending orders that have been deleted when loading a game in
+  // number of pending 
+  // that have been deleted when loading a game in
   const [ordersDeleted, setOrdersDeleted] = useState<number>(0);
 
   // list of orders that is used in the summary screen

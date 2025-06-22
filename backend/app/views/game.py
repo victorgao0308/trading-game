@@ -6,12 +6,11 @@ from ..engine.prices import getNextPriceSolo
 from .player import create_player
 from .stock import create_stock
 
-
 import string
 import random
 
 @api_view(['POST'])
-def create_base_game(request):
+def create_base_game_solo(request):
     game_type = GameSettings.GAME_BASE_SOLO
     num_bots = 0                 # default for solo game
     num_market_makers = 0        # default for solo game
@@ -46,7 +45,7 @@ def create_base_game(request):
 
 
     stock, initial_prices = create_stock(seed, num_trading_days * num_ticks_per_day)
-    player = create_player(Player.ROLE_PLAYER, starting_cash)
+    player = create_player(Player.ROLE_PLAYER, starting_cash, -1)
     if player is None:
         return Response({
         "error": "Error with player creation"    
@@ -61,13 +60,72 @@ def create_base_game(request):
 
     base_game.players.set([player])
 
+    base_game.save()
 
-    base_game.num_players = 1
+    return Response({
+        "success": "Solo base game created",
+        "base_game": base_game.to_dict(),
+        "initial_prices": initial_prices                   
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def create_base_game_regular(request):
+    game_type = GameSettings.GAME_BASE
+    num_bots = request.data.get("num_bots")
+    num_market_makers = request.data.get("num_market_makers")
+    num_trading_days = request.data.get("num_trading_days")
+    num_ticks_per_day = request.data.get("num_ticks_per_day")
+    time_between_ticks = request.data.get("time_between_ticks")
+    starting_cash = request.data.get("starting_cash")
+    volatility = request.data.get("volatility")
+    seed = request.data.get("seed")
+
+    # generate a random seed if no seed provided
+    if seed is None or seed == "":
+        characters = string.ascii_letters + string.digits
+        seed = ''.join(random.choices(characters, k=16))
+
+    if num_bots is None or num_market_makers is None or num_trading_days is None or \
+       num_ticks_per_day is None or time_between_ticks is None or \
+       starting_cash is None or volatility is None: 
+        return Response({
+        "error": "Invalid parameters"    
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    # create settings
+    settings = GameSettings(game_type = game_type, num_bots = num_bots, num_market_makers = num_market_makers,
+                            num_trading_days = num_trading_days, num_ticks_per_day = num_ticks_per_day,
+                            time_between_ticks = time_between_ticks, starting_cash = starting_cash,
+                            volatility = volatility, seed = seed)
+    
+    settings.save()
+
+
+    stock, initial_prices = create_stock(seed, num_trading_days * num_ticks_per_day)
+    player = create_player(Player.ROLE_PLAYER, starting_cash, 0)
+    random.seed(seed)
+    # play style is randomly generated from 1-100, for now
+    bots = [create_player(Player.ROLE_BOT, starting_cash, random.randint(1, 100)) for _ in range(num_bots)]
+    if player is None or None in bots:
+        return Response({
+        "error": "Error with player creation"    
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    base_game = BaseGame()
+    base_game.settings = settings
+    base_game.seed = seed
+    base_game.stock = stock
+    base_game.num_players = 1 + num_bots
+    base_game.save()
+
+    base_game.players.set([player, *bots])
 
     base_game.save()
 
     return Response({
-        "success": "Base game created",
+        "success": "Regular base game created",
         "base_game": base_game.to_dict(),
         "initial_prices": initial_prices                   
     }, status=status.HTTP_200_OK)

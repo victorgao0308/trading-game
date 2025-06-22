@@ -346,27 +346,32 @@ const CreateGame = () => {
     const response = await axios.delete(
       `${web_url}/remove-game-from-manager/${localStorage.getItem("gameId")}`
     );
-
-    localStorage.setItem("gameSetup", JSON.stringify(gameSetup.current));
     await createNewGame();
   };
 
   // creates a new game, registers it, and navigates to the new page
   const createNewGame = async () => {
-    const createResponse = await axios.post(`${web_url}/create-base-game/`, {
-      game_type: 1,
-      num_trading_days: parseInt(numTradingDays),
-      num_ticks_per_day: parseInt(numTicksPerDay),
-      time_between_ticks: parseFloat(timeBetweenTicks),
-      starting_cash: startingCash,
-      volatility: volatility,
-      seed: seed,
-    });
-    const gameId = createResponse.data.base_game.id;
-    const registerReponse = await axios.post(
-      `${web_url}/register-base-game/${gameId}/`
-    );
-    navigate(`/game/${gameId}`);
+    if (selectedIndex === games.BASE_GAME_SOLO) {
+      const createResponse = await axios.post(
+        `${web_url}/create-base-game-solo/`,
+        {
+          game_type: 1,
+          num_trading_days: parseInt(numTradingDays),
+          num_ticks_per_day: parseInt(numTicksPerDay),
+          time_between_ticks: parseFloat(timeBetweenTicks),
+          starting_cash: startingCash,
+          volatility: volatility,
+          seed: seed,
+        }
+      );
+      const gameId = createResponse.data.base_game.id;
+      const registerReponse = await axios.post(
+        `${web_url}/register-base-game/${gameId}/`
+      );
+      navigate(`/game/${gameId}`);
+    } else if (selectedIndex === games.BASE_GAME_REGULAR) {
+      alert("regular base game");
+    }
   };
 
   return (
