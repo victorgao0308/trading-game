@@ -100,7 +100,8 @@ const CreateGame = () => {
 
   // holds previous game object
   const [prevGame, setPrevGame] = useState<any>({
-    stock: { type: "", id: "", ticks_generated: 0, current_price: 0 },
+    stock: { id: "", ticks_generated: 0, current_price: 0 },
+    settings: { game_type: "" },
   });
 
   // handlers for scrolling left/right on game type
@@ -337,7 +338,13 @@ const CreateGame = () => {
   // load in previous game, navigate to that page
   // differentiate between different game types?
   const loadPrevGame = () => {
-    navigate(`/game/${localStorage.getItem("gameId")}`);
+    const game_type = prevGame.settings.game_type;
+    if (game_type === "Base game (solo)") {
+      navigate(`/base-game-solo/${localStorage.getItem("gameId")}`);
+    }
+    else if (game_type === "Base game (regular)") {
+      navigate(`/base-game-regular/${localStorage.getItem("gameId")}`);
+    }
   };
 
   // delete old game from game manager
@@ -351,11 +358,11 @@ const CreateGame = () => {
 
   // creates a new game, registers it, and navigates to the new page
   const createNewGame = async () => {
+    // base game solo
     if (selectedIndex === games.BASE_GAME_SOLO) {
       const createResponse = await axios.post(
         `${web_url}/create-base-game-solo/`,
         {
-          game_type: 1,
           num_trading_days: parseInt(numTradingDays),
           num_ticks_per_day: parseInt(numTicksPerDay),
           time_between_ticks: parseFloat(timeBetweenTicks),
@@ -368,10 +375,31 @@ const CreateGame = () => {
       const registerReponse = await axios.post(
         `${web_url}/register-base-game/${gameId}/`
       );
-       localStorage.setItem("gameId", gameId)
-      navigate(`/game/${gameId}`);
+      localStorage.setItem("gameId", gameId);
+      navigate(`/base-game-solo/${gameId}`);
+
+      // base game regular
     } else if (selectedIndex === games.BASE_GAME_REGULAR) {
-      alert("regular base game");
+      const createResponse = await axios.post(
+        `${web_url}/create-base-game-regular/`,
+        {
+          num_trading_days: parseInt(numTradingDays),
+          num_ticks_per_day: parseInt(numTicksPerDay),
+          time_between_ticks: parseFloat(timeBetweenTicks),
+          num_bots: parseInt(numBots),
+          num_market_makers: parseInt(numMM),
+          starting_cash: startingCash,
+          volatility: volatility,
+          seed: seed,
+        }
+      );
+      console.log(createResponse.data);
+      const gameId = createResponse.data.base_game.id;
+      const registerReponse = await axios.post(
+        `${web_url}/register-base-game/${gameId}/`
+      );
+      localStorage.setItem("gameId", gameId);
+      navigate(`/base-game-regular/${gameId}`);
     }
   };
 
@@ -755,7 +783,7 @@ const CreateGame = () => {
               className="w-full font-bold !my-2"
               variant="fullWidth"
             ></Divider>
-            Type: {prevGame.type} <br />
+            Type: {prevGame.settings.game_type} <br />
             ID: {prevGame.id} <br />
             Ticks Generated: {prevGame.stock.ticks_generated} <br />
             Current Stock Price: ${prevGame.stock.current_price.toFixed(2)}{" "}

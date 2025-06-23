@@ -231,11 +231,11 @@ class GameSettings(models.Model):
     GAME_OPTIONS = 4
 
     GAME_CHOICES = [
-        (GAME_BASE_TUTORIAL, "Tutorial for the base game"),
-        (GAME_BASE_SOLO, "Base game with a single player"),
-        (GAME_BASE, "Base game where player trades against bots"),
-        (GAME_OPTIONS_TUTORIAL, "Tutorial for options mode"),
-        (GAME_OPTIONS, "Game where player can trade options with bots")
+        (GAME_BASE_TUTORIAL, "Base game tutorial"),
+        (GAME_BASE_SOLO, "Base game (solo)"),
+        (GAME_BASE, "Base game (regular)"),
+        (GAME_OPTIONS_TUTORIAL, "Options mode tutorial"),
+        (GAME_OPTIONS, "Options mode")
     ]
 
     game_type = models.IntegerField(choices=GAME_CHOICES, default = GAME_BASE_SOLO)

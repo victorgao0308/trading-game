@@ -17,6 +17,7 @@ import {
   Snackbar,
   Dialog,
   DialogTitle,
+  DialogContent,
   DialogActions,
 } from "@mui/material";
 import { ArrowDropUp, ArrowDropDown } from "@mui/icons-material";
@@ -44,8 +45,10 @@ let TIMEBETWEENTICKS: number = -1;
 let NUMTRADINGDAYS: number = -1;
 let VOLATILITY: number = -1;
 let SEED: string = "";
+let NUMBOTS: number = -1;
+let NUMMARKETMAKERS: number = -1;
 
-const BaseGameSolo = () => {
+const BaseGameRegular = () => {
   const [gameId, setGameId] = useState<string>("");
   const stockId = useRef<string>("");
   const players = useRef<Player[]>([]);
@@ -133,7 +136,7 @@ const BaseGameSolo = () => {
 
   const currentPrice = useRef<number>(0);
 
-  // number of pending 
+  // number of pending
   // that have been deleted when loading a game in
   const [ordersDeleted, setOrdersDeleted] = useState<number>(0);
 
@@ -158,9 +161,7 @@ const BaseGameSolo = () => {
       let pastValues = game.stock.past_values;
       stockId.current = game.stock.id;
       const settings = game.settings;
-
-      console.log(settings);
-      if (settings.game_type !== "Base game (solo)") {
+      if (settings.game_type !== "Base game (regular)") {
         throw new Error("Game type does not match");
       }
 
@@ -169,6 +170,8 @@ const BaseGameSolo = () => {
       NUMTRADINGDAYS = settings.num_trading_days;
       VOLATILITY = settings.volatility;
       SEED = settings.seed;
+      NUMBOTS = settings.num_bots;
+      NUMMARKETMAKERS = settings.num_market_makers;
 
       loadOrders(game.stock.fulfilled_orders);
 
@@ -622,6 +625,8 @@ const BaseGameSolo = () => {
 
   return (
     <>
+
+    REGULAR GAME
       {isSettingUp ? (
         <CircularProgress
           size={100}
@@ -895,4 +900,4 @@ const BaseGameSolo = () => {
   );
 };
 
-export default BaseGameSolo;
+export default BaseGameRegular;
