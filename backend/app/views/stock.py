@@ -7,7 +7,7 @@ from bitarray import bitarray
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from app.tasks import handle_buy_stock_solo, SUCCESS
+from app.tasks import handle_buy_stock_solo, handle_buy_stock_regular, SUCCESS
 from django.core.exceptions import ObjectDoesNotExist
 
 
@@ -108,7 +108,7 @@ def create_base_order(request):
     order.day_placed_on = day_placed_on
     order.save()
 
-    # solo mode orders get handled immediately
+    # solo mode orders
     if order_type == Order.TYPE_SOLO:
         # send request to celery
         if handle_buy_stock_solo(order, stock) == SUCCESS:
@@ -124,12 +124,27 @@ def create_base_order(request):
             "error": "an error occurred while placing an order",
             }, status=status.HTTP_400_BAD_REQUEST)
 
-    else:
 
+
+    # regular mode orders
+    elif order_type == Order.TYPE_REGULAR:
+        # send request to celery
+        if handle_buy_stock_regular(order, stock) == SUCCESS:
+            return Response({
+            "success": "Order Placed",
+            "order": order.to_dict(),
+            "player": player.to_dict(),
+            "stock": stock.to_dict()
+            }, status=status.HTTP_200_OK)
+        
+        else:
+            return Response({
+            "error": "an error occurred while placing an order",
+            }, status=status.HTTP_400_BAD_REQUEST)
+    else:
         return Response({
-        "success": "Order created successfully",
-        "order": order.to_dict()
-        }, status=status.HTTP_200_OK)
+        "error": "Order has an invalid type",
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 

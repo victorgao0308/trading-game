@@ -133,7 +133,7 @@ const BaseGameSolo = () => {
 
   const currentPrice = useRef<number>(0);
 
-  // number of pending 
+  // number of pending orders
   // that have been deleted when loading a game in
   const [ordersDeleted, setOrdersDeleted] = useState<number>(0);
 

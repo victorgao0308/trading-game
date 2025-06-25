@@ -121,9 +121,12 @@ The day_placed_on and day_confirmed_on fields help provide data for the end of t
 '''
 class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
     TYPE_SOLO = 0
+    TYPE_REGULAR = 1
     TYPE_CHOICES = [
-        (TYPE_SOLO, "Order in Solo Mode")
+        (TYPE_SOLO, "Order in Solo Mode"),
+        (TYPE_REGULAR, "Order in Regular Mode")
     ]
 
     STATUS_PLACED = 0

@@ -1,14 +1,15 @@
 handle the end of a game? (settle stocks owned into cash)
 
-have some way to clear the recent orders UI?
+
+implement logic for handling a buy/sell request
+handle logic for get_next_price_regular 
 
 deprecate seed field in BaseGame (use the one in GameSettings)
 
 
-Figure out some way to attach a priority queue of Orders to a Stock
 
 need to do some refactoring
-
+have some way to clear the recent orders UI?
 
 eventually, make docker spin up the frontend as well
 

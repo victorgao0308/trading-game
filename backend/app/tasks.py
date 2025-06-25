@@ -48,3 +48,14 @@ def process_buy_stock_solo(order, stock):
     order.save()
 
     return SUCCESS
+
+
+# handles purchasing of a stock in regular mode
+# TODO
+@shared_task
+def handle_buy_stock_regular(order, stock):
+    order.status = Order.STATUS_PLACED
+    order.save()
+    stock.pending_orders.add(order)
+    stock.save()
+    return SUCCESS

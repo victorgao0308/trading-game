@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from ..models import BaseGame, GameManager, Player, GameSettings
-from ..engine.prices import getNextPriceSolo
+from ..engine.prices import getNextPriceSolo, getNextPriceRegular
 from .player import create_player
 from .stock import create_stock
 
@@ -236,7 +236,7 @@ def get_next_base_game_price_solo(request, game_id):
 
     if price == -1:
          return Response({
-            "error": f"Base game with id {game_id} not registered yet"            
+            "error": f"Base game with id {game_id} not registered yet, or game type mismatch"            
             },status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -246,6 +246,22 @@ def get_next_base_game_price_solo(request, game_id):
             
             },status=status.HTTP_200_OK)
 
+
+@api_view(['GET'])
+def get_next_base_game_price_regular(request, game_id):
+    price = getNextPriceRegular(game_id)
+
+    if price == -1:
+         return Response({
+            "error": f"Regular game with id {game_id} not registered yet, or game type mismatch"            
+            },status=status.HTTP_400_BAD_REQUEST)
+
+
+    return Response({
+            "success": f"Regular game with id {game_id} price updated successfully",
+            "price": price 
+            
+            },status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def pause_base_game(request, game_id):

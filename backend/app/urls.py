@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views.game import create_base_game_solo, delete_base_game, get_game_manager, register_base_game, get_next_base_game_price_solo
+from .views.game import create_base_game_solo, delete_base_game, get_game_manager, register_base_game, get_next_base_game_price_solo, get_next_base_game_price_regular
 from .views.game import create_tutorial, pause_base_game, resume_base_game, remove_game_from_manager, create_base_game_regular
 from .views.stock import create_base_order, remove_pending_orders, get_orders_placed_on_day
 
@@ -27,6 +27,7 @@ urlpatterns = [
     path('get-game-manager/', get_game_manager, name='get-game-manager'),
     path('register-base-game/<str:game_id>/', register_base_game, name='register-base-game'),
     path('get-next-base-game-price-solo/<str:game_id>/', get_next_base_game_price_solo, name='get-next-base-game-price-solo'),
+    path('get-next-base-game-price-regular/<str:game_id>/', get_next_base_game_price_regular, name='get-next-base-game-price-regular'),
     path('create-tutorial/', create_tutorial, name='create-tutorial'),
     path('pause-base-game/<str:game_id>/', pause_base_game, name='pause-base-game'),
     path('resume-base-game/<str:game_id>/', resume_base_game, name="resume-base-game"),

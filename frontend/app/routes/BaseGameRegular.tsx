@@ -136,19 +136,12 @@ const BaseGameRegular = () => {
 
   const currentPrice = useRef<number>(0);
 
-  // number of pending
-  // that have been deleted when loading a game in
-  const [ordersDeleted, setOrdersDeleted] = useState<number>(0);
-
   // list of orders that is used in the summary screen
   const [summaryOrders, setSummaryOrders] = useState<Order[]>([]);
 
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
-    if (ordersDeleted != 0) {
-      setOrdersDeleted(0);
-    }
     setIsGeneratingData((prev) => !prev);
   };
 
@@ -175,19 +168,7 @@ const BaseGameRegular = () => {
 
       loadOrders(game.stock.fulfilled_orders);
 
-      // if stock has pending orders, remove them
-      try {
-        const response = await axios.delete(
-          `${web_url}/remove-pending-orders/${game.stock.id}/`
-        );
-        setOrdersDeleted(response.data.orders_deleted);
-
-        setTimeout(() => {
-          setOrdersDeleted(0);
-        }, 10000);
-      } catch (error) {
-        console.error("Error posting data:", error);
-      }
+    
 
       setCash(game.players[0].money);
 
@@ -277,7 +258,7 @@ const BaseGameRegular = () => {
   const getNextDataPoint = async () => {
     try {
       const response = await axios.get(
-        `${web_url}/get-next-base-game-price-solo/${gameId}/`
+        `${web_url}/get-next-base-game-price-regular/${gameId}/`
       );
       return response.data.price;
     } catch (error) {
@@ -807,29 +788,7 @@ const BaseGameRegular = () => {
         </ResponsiveContainer>
       </div>
 
-      <Snackbar
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        open={ordersDeleted > 0}
-        message="Trading day ended."
-        slots={{ transition: Slide }}
-        slotProps={{
-          transition: {
-            direction: "left",
-          },
-        }}
-      >
-        <Alert
-          severity="warning"
-          sx={{ width: "400px", fontSize: "1.1rem", py: 2 }}
-        >
-          {ordersDeleted == 1
-            ? "1 pending order was deleted."
-            : `${ordersDeleted} pending orders were deleted.`}{" "}
-          {
-            "Orders get put into pending status when they are filled, and get put into completed status at the game tick immediately after when the order was placed."
-          }
-        </Alert>
-      </Snackbar>
+
 
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
