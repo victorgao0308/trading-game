@@ -165,10 +165,7 @@ const BaseGameRegular = () => {
       SEED = settings.seed;
       NUMBOTS = settings.num_bots;
       NUMMARKETMAKERS = settings.num_market_makers;
-
-      loadOrders(game.stock.fulfilled_orders);
-
-    
+      loadOrders(game.stock.fulfilled_orders.concat(game.stock.pending_orders));
 
       setCash(game.players[0].money);
 
@@ -319,10 +316,9 @@ const BaseGameRegular = () => {
     document.addEventListener("keydown", openSummary);
   };
 
-  // transform the "fufilled orders" field into list of Order objects
-  // since pending orders get removed, we only need to worry about the fulfilled ones
-  const loadOrders = (fufilledOrders: any) => {
-    fufilledOrders.forEach((order: any) => {
+  // transform the fulfilled and filled orders into a list of orders to be displayed
+  const loadOrders = (orders: any) => {
+    orders.forEach((order: any) => {
       const title =
         (order.quantity > 0 ? "Buy " : "Sell ") +
         Math.abs(order.quantity) +
@@ -354,14 +350,15 @@ const BaseGameRegular = () => {
         const currentTime = Date.now();
         const next_price = await getNextDataPoint();
 
-        // update orders, from filled to confirmed, and confirmed to hidden (doesn't appear on list of recent orders)
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.status === "Order Filled"
-              ? { ...order, status: "Order Confirmed" }
-              : order
-          )
-        );
+        // // update orders, from filled to confirmed, and confirmed to hidden (doesn't appear on list of recent orders)
+        // setOrders((prevOrders) =>
+        //   prevOrders.map((order) =>
+        //     order.status === "Order Filled"
+        //       ? { ...order, status: "Order Confirmed" }
+        //       : order
+        //   )
+        // );
+
         minValue.current = Math.min(minValue.current, next_price);
         maxValue.current = Math.max(maxValue.current, next_price);
         setData((prevData) => {
@@ -518,7 +515,7 @@ const BaseGameRegular = () => {
               const response = await axios.post(
                 `${web_url}/create-base-order/`,
                 {
-                  order_type: 0,
+                  order_type: 1,
                   player_id: players.current[0].id,
                   game_id: gameId,
                   stock_id: stockId.current,
@@ -606,8 +603,7 @@ const BaseGameRegular = () => {
 
   return (
     <>
-
-    REGULAR GAME
+      REGULAR GAME
       {isSettingUp ? (
         <CircularProgress
           size={100}
@@ -616,7 +612,6 @@ const BaseGameRegular = () => {
       ) : (
         <OrderStatusList orders={orders} />
       )}
-
       <div className="flex flex-row">
         <div>
           <h1 className="ml-2">
@@ -787,9 +782,6 @@ const BaseGameRegular = () => {
           )}
         </ResponsiveContainer>
       </div>
-
-
-
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={isBetweenDays}
@@ -836,7 +828,6 @@ const BaseGameRegular = () => {
           <Button onClick={goToNextDay}>Next Day</Button>
         </DialogActions>
       </Dialog>
-
       {/* Stock Broker */}
       {isGeneratingData ? (
         <div
