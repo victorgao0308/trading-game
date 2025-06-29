@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -45,7 +46,7 @@ def create_base_game_solo(request):
 
 
     stock, initial_prices = create_stock(seed, num_trading_days * num_ticks_per_day)
-    player = create_player(Player.ROLE_PLAYER, starting_cash, -1)
+    player = create_player(Player.ROLE_PLAYER, starting_cash, -1, num_trading_days)
     if player is None:
         return Response({
         "error": "Error with player creation"    
@@ -104,10 +105,10 @@ def create_base_game_regular(request):
 
 
     stock, initial_prices = create_stock(seed, num_trading_days * num_ticks_per_day)
-    player = create_player(Player.ROLE_PLAYER, starting_cash, 0)
+    player = create_player(Player.ROLE_PLAYER, starting_cash, 0, num_trading_days)
     random.seed(seed)
     # play style is randomly generated from 1-100, for now
-    bots = [create_player(Player.ROLE_BOT, starting_cash, random.randint(1, 100)) for _ in range(num_bots)]
+    bots = [create_player(Player.ROLE_BOT, starting_cash, random.randint(1, 100), num_trading_days) for _ in range(num_bots)]
     if player is None or None in bots:
         return Response({
         "error": "Error with player creation"    
@@ -229,21 +230,71 @@ def remove_game_from_manager(request, game_id):
             },status=status.HTTP_200_OK)
     
 
-@api_view(['GET'])
-def get_next_base_game_price_solo(request, game_id):
-    price = getNextPriceSolo(game_id)
 
+# base interest rate: 10%
+# base interest rate for a loan: 18%
+# assuming 365 days per year, these values are the interest rates per day
+INTEREST_RATE = (1 + 0.10)**(1/365)
+INTEREST_LOAN_RATE = (1 + 0.18)**(1/365)
+
+# gets the next price in a solo game, and process interest
+@api_view(['POST'])
+def get_next_base_game_price_solo(request, game_id):
+
+    trading_day = request.data.get("trading_day")
+    if trading_day is None:
+        return Response({
+            "error": "trading_day parameter not supplied"           
+            },status=status.HTTP_400_BAD_REQUEST)
+
+    price = getNextPriceSolo(game_id)
 
     if price == -1:
          return Response({
             "error": f"Base game with id {game_id} not registered yet, or game type mismatch"            
             },status=status.HTTP_400_BAD_REQUEST)
+    
 
+    manager = GameManager()
+    game = manager.get_game(game_id)
+
+    if game == None or game.settings.game_type != GameSettings.GAME_BASE_SOLO:
+        return Response({
+            "error": f"Base game with id {game_id} not registered yet, or game type mismatch"            
+            },status=status.HTTP_400_BAD_REQUEST)
+    
+    # solo game only has one player, which represents the user playing the game
+    player = game.players.all().first()
+
+    # update player's cash based on interest
+    money = float(player.money)
+    tmp = money
+
+    # give player interest
+    if money >= 0:
+        money *= INTEREST_RATE
+    # charge player interest
+    else:
+        money *= INTEREST_LOAN_RATE
+
+    # round back to 2 decimal place and find diff
+    tmp = Decimal(str(tmp)).quantize(Decimal("0.01"))
+    money = Decimal(str(money)).quantize(Decimal("0.01"))
+    diff = money - tmp
+
+    if diff >= 0:
+        player.interest_earned[trading_day - 1] += diff
+    else:
+        player.interest_paid[trading_day - 1] += diff * -1
+
+
+    player.money = money
+    player.save()
 
     return Response({
             "success": f"Base game with id {game_id} price updated successfully",
-            "price": price 
-            
+            "price": price,
+            "player_cash": money
             },status=status.HTTP_200_OK)
 
 

@@ -159,7 +159,7 @@ const BaseGameSolo = () => {
       stockId.current = game.stock.id;
       const settings = game.settings;
 
-      console.log(settings);
+      console.log(game.players[0]);
       if (settings.game_type !== "Base game (solo)") {
         throw new Error("Game type does not match");
       }
@@ -273,9 +273,13 @@ const BaseGameSolo = () => {
   // gets next data point
   const getNextDataPoint = async () => {
     try {
-      const response = await axios.get(
-        `${web_url}/get-next-base-game-price-solo/${gameId}/`
+      const response = await axios.post(
+        `${web_url}/get-next-base-game-price-solo/${gameId}/`,
+        {
+          "trading_day": curTradingDay.current
+        }
       );
+      setCash(response.data.player_cash);
       return response.data.price;
     } catch (error) {
       console.error("Error posting data:", error);

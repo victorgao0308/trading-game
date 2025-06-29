@@ -1,8 +1,16 @@
 handle the end of a game? (settle stocks owned into cash)
 
+add interest statistics to trading day summary
+ look into weird interest calculations (might be due to rounding?)
+
+nuke tutorial mode (too much work, just add an info modal explaining the mechanics)
 
 implement logic for handling a buy/sell request
 handle logic for get_next_price_regular 
+
+
+
+add wiki/instructions?
 
 deprecate seed field in BaseGame (use the one in GameSettings)
 

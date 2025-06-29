@@ -255,7 +255,7 @@ const BaseGameRegular = () => {
   const getNextDataPoint = async () => {
     try {
       const response = await axios.get(
-        `${web_url}/get-next-base-game-price-regular/${gameId}/`
+        `${web_url}/get-next-base-game-price-regular/${gameId}/`,
       );
       return response.data.price;
     } catch (error) {

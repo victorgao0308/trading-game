@@ -63,6 +63,9 @@ Player: the player
 Bot: bots in the game that the player is trading against
 
 play_style: used for bots to determine the style of play that they have
+
+interest_earned: array of amounts that the player earned through interest (interest_earned[i] is amount of interest earned on day i)
+interest_paid: same as interest_earned, but with amount of interest paid per day instead
 '''
 class Player(models.Model):
     ROLE_SYSTEM = 0
@@ -79,6 +82,8 @@ class Player(models.Model):
     money = models.DecimalField(default=0, decimal_places=2, max_digits=20)
     play_style = models.IntegerField(default=0)
     owned_stocks = models.JSONField(default=dict)
+    interest_earned = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
+    interest_paid = ArrayField(models.DecimalField(default=0, decimal_places=2, max_digits=20), default=list)
 
     def to_dict(self):
         return {
@@ -86,7 +91,9 @@ class Player(models.Model):
             "role": self.get_role_display(),
             "money": self.money,
             "play_style": self.play_style,
-            "owned_stocks": self.owned_stocks
+            "owned_stocks": self.owned_stocks,
+            "interest_earned": self.interest_earned,
+            "interest_paid": self.interest_paid
         }
 
 
