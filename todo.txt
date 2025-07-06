@@ -1,6 +1,6 @@
 handle the end of a game? (settle stocks owned into cash), summary screen, etc
 
-add interest statistics to trading day summary
+fix appearance of summary screen
  look into weird interest calculations (might be due to rounding?)
 
 nuke tutorial mode (too much work, just add an info modal explaining the mechanics)

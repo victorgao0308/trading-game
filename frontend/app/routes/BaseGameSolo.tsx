@@ -27,9 +27,7 @@ import GameInfoModal from "~/components/GameInfoModal";
 import OrderStatusList from "~/components/OrderStatusList";
 import BaseGameSoloDescriptionModal from "~/components/BaseGameSoloDescriptionModal";
 
-
 import { useNavigate } from "react-router";
-
 
 interface DataPoint {
   time: number;
@@ -145,6 +143,8 @@ const BaseGameSolo = () => {
   // list of orders that is used in the summary screen
   const [summaryOrders, setSummaryOrders] = useState<Order[]>([]);
 
+  // interest earned/gained on trading day by player
+  const interestSummary = useRef<number[]>([0, 0]);
 
   const navigate = useNavigate();
 
@@ -271,7 +271,7 @@ const BaseGameSolo = () => {
       const response = await axios.post(
         `${web_url}/get-next-base-game-price-solo/${gameId}/`,
         {
-          "trading_day": curTradingDay.current
+          trading_day: curTradingDay.current,
         }
       );
       setCash(response.data.player_cash);
@@ -331,6 +331,16 @@ const BaseGameSolo = () => {
     } catch (error) {
       console.error("Error posting data:", error);
     }
+
+    try {
+      const response = await axios.get(
+        `${web_url}/get-interest-earned-and-paid/${players.current[0].id}/${curTradingDay.current}/`
+      );
+      interestSummary.current = [response.data.interest_earned, response.data.interest_paid]
+    } catch (error) {
+      console.error("Error getting interest earned/paid on trading:", error);
+    }
+
     document.addEventListener("keydown", openSummary);
   };
 
@@ -513,11 +523,11 @@ const BaseGameSolo = () => {
     }
   }, [gameId]);
 
-  // handles end of the game 
+  // handles end of the game
   // basically, just routes to component to display statistics
   const handleEndOfGame = () => {
     navigate(`/game-summary/${gameId}`);
-  }
+  };
 
   // handle broker text
   const handleBrokerText = async (e: any) => {
@@ -723,7 +733,7 @@ const BaseGameSolo = () => {
         stockId={stockId.current}
         players={players.current}
       />
-      <BaseGameSoloDescriptionModal/>
+      <BaseGameSoloDescriptionModal />
       <Button
         onClick={toggleDataGeneration}
         onKeyDown={(e) => {
@@ -870,16 +880,19 @@ const BaseGameSolo = () => {
       </Snackbar>
       <Dialog open={openSummaryWindow}>
         <DialogTitle>Summary of Trading Day</DialogTitle>
-
+        <h1>Orders Placed Today</h1>
         {summaryOrders.map((order) => (
           <h1 key={order.id}>{order.title}</h1>
         ))}
+        <h1>Interest</h1>
+        <h2>Interest Earned Today: ${interestSummary.current[0].toFixed(2)}</h2>
+        <h2>Interest Paid Today: ${interestSummary.current[1].toFixed(2)}</h2>
         <DialogActions>
-          {curTradingDay.current === NUMTRADINGDAYS ? 
-                <Button onClick={handleEndOfGame}>View Summary</Button> :
-                <Button onClick={goToNextDay}>Next Day</Button>
-          }
-
+          {curTradingDay.current === NUMTRADINGDAYS ? (
+            <Button onClick={handleEndOfGame}>View Summary</Button>
+          ) : (
+            <Button onClick={goToNextDay}>Next Day</Button>
+          )}
         </DialogActions>
       </Dialog>
 

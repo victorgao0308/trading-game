@@ -18,6 +18,7 @@ from django.urls import path
 from .views.game import create_base_game_solo, delete_base_game, get_game_manager, register_base_game, get_next_base_game_price_solo, get_next_base_game_price_regular
 from .views.game import create_tutorial, pause_base_game, resume_base_game, remove_game_from_manager, create_base_game_regular
 from .views.stock import create_base_order, remove_pending_orders, get_orders_placed_on_day
+from .views.player import get_interest_earned_and_paid
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -34,6 +35,7 @@ urlpatterns = [
     path('remove-game-from-manager/<str:game_id>/', remove_game_from_manager, name='remove-game-from-manager'),
     path('create-base-order/', create_base_order, name='create-base-order'),
     path('remove-pending-orders/<str:stock_id>/', remove_pending_orders, name='remove-pending-orders'),
-    path('get-orders-placed-on-day/', get_orders_placed_on_day, name='get-orders-placed-on-day')
+    path('get-orders-placed-on-day/', get_orders_placed_on_day, name='get-orders-placed-on-day'),
+    path('get-interest-earned-and-paid/<str:player_id>/<str:trading_day>/', get_interest_earned_and_paid, name='get-interest-earned-and-paid')
     ]
 

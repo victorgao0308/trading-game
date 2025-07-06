@@ -186,7 +186,6 @@ def get_orders_placed_on_day(request):
         "error": "stock does not exist"
         }, status=status.HTTP_400_BAD_REQUEST)
 
-
     orders = []
     for order in stock.fulfilled_orders.all():
         if order.day_placed_on == trading_day:

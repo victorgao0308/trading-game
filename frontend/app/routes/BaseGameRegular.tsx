@@ -284,6 +284,7 @@ const BaseGameRegular = () => {
   };
 
   // handle end of trading day
+  // get the orders placed on a certain day, and get interest earned/paid on that day
   const handleEndOfDay = async () => {
     try {
       const response = await axios.post(
@@ -311,7 +312,7 @@ const BaseGameRegular = () => {
       });
       setSummaryOrders(orders);
     } catch (error) {
-      console.error("Error posting data:", error);
+      console.error("Error getting orders placed on trading day:", error);
     }
     document.addEventListener("keydown", openSummary);
   };
@@ -408,7 +409,7 @@ const BaseGameRegular = () => {
               `${web_url}/resume-base-game/${gameId}/`
             );
           } catch (error) {
-            console.error("Error fetching summary for trading day:", error);
+            console.error("Error resuming the game:", error);
           }
           setTimeout(async () => {
             generatePoint();
