@@ -130,10 +130,18 @@ class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
     TYPE_SOLO = 0
-    TYPE_REGULAR = 1
+    TYPE_ALL_OR_NONE = 1
+    TYPE_IMMEDIATE_OR_CANCEL = 2
+    TYPE_GOOD_FOR_DAY = 3
+    TYPE_GOOD_TIL_CANCELLED = 4
+    TYPE_FILL_OR_KILL = 5
     TYPE_CHOICES = [
         (TYPE_SOLO, "Order in Solo Mode"),
-        (TYPE_REGULAR, "Order in Regular Mode")
+        (TYPE_ALL_OR_NONE, "All or None order"),
+        (TYPE_IMMEDIATE_OR_CANCEL, "Immediate or cancel order"),
+        (TYPE_GOOD_FOR_DAY, "Good for day order"),
+        (TYPE_GOOD_TIL_CANCELLED, "Good 'til cancelled order"),
+        (TYPE_FILL_OR_KILL, "Fill or kill order")
     ]
 
     STATUS_PLACED = 0

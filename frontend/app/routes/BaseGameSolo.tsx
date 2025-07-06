@@ -25,6 +25,11 @@ import web_url from "web-url";
 import Decimal from "decimal.js";
 import GameInfoModal from "~/components/GameInfoModal";
 import OrderStatusList from "~/components/OrderStatusList";
+import BaseGameSoloDescriptionModal from "~/components/BaseGameSoloDescriptionModal";
+
+
+import { useNavigate } from "react-router";
+
 
 interface DataPoint {
   time: number;
@@ -140,6 +145,9 @@ const BaseGameSolo = () => {
   // list of orders that is used in the summary screen
   const [summaryOrders, setSummaryOrders] = useState<Order[]>([]);
 
+
+  const navigate = useNavigate();
+
   // toggle generation of data
   // if toggling on, add event listener
   const toggleDataGeneration = () => {
@@ -159,7 +167,6 @@ const BaseGameSolo = () => {
       stockId.current = game.stock.id;
       const settings = game.settings;
 
-      console.log(game.players[0]);
       if (settings.game_type !== "Base game (solo)") {
         throw new Error("Game type does not match");
       }
@@ -256,18 +263,6 @@ const BaseGameSolo = () => {
 
     // once game loads, attach event listener for the broker
     document.addEventListener("keydown", handleBrokerText);
-
-    // event listener to toggle data generation when space bar is pressed
-    // document.addEventListener("keydown", (e: any) => {
-    //   // this mimics the "disabled" behavior of the toggle data generation button
-
-    //   if (
-    //     !(gameId === "" || isResuming || isBetweenDays || isInvalidGame) &&
-    //     e.key === " "
-    //   ) {
-    //     toggleDataGeneration();
-    //   }
-    // });
   };
 
   // gets next data point
@@ -518,6 +513,12 @@ const BaseGameSolo = () => {
     }
   }, [gameId]);
 
+  // handles end of the game 
+  // basically, just routes to component to display statistics
+  const handleEndOfGame = () => {
+    navigate(`/game-summary/${gameId}`);
+  }
+
   // handle broker text
   const handleBrokerText = async (e: any) => {
     // don't allow usage of broker when game is paused
@@ -722,6 +723,7 @@ const BaseGameSolo = () => {
         stockId={stockId.current}
         players={players.current}
       />
+      <BaseGameSoloDescriptionModal/>
       <Button
         onClick={toggleDataGeneration}
         onKeyDown={(e) => {
@@ -873,7 +875,11 @@ const BaseGameSolo = () => {
           <h1 key={order.id}>{order.title}</h1>
         ))}
         <DialogActions>
-          <Button onClick={goToNextDay}>Next Day</Button>
+          {curTradingDay.current === NUMTRADINGDAYS ? 
+                <Button onClick={handleEndOfGame}>View Summary</Button> :
+                <Button onClick={goToNextDay}>Next Day</Button>
+          }
+
         </DialogActions>
       </Dialog>
 

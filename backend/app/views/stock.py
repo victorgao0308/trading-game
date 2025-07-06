@@ -1,4 +1,4 @@
-from ..models import Stock, Order, Player, BaseGame
+from ..models import Stock, Order, Player
 import random
 import json
 import os
@@ -127,7 +127,11 @@ def create_base_order(request):
 
 
     # regular mode orders
-    elif order_type == Order.TYPE_REGULAR:
+    elif order_type in [Order.TYPE_ALL_OR_NONE,
+                        Order.TYPE_IMMEDIATE_OR_CANCEL,
+                        Order.TYPE_GOOD_FOR_DAY,
+                        Order.TYPE_GOOD_TIL_CANCELLED,
+                        Order.TYPE_FILL_OR_KILL]:
         # send request to celery
         if handle_buy_stock_regular(order, stock) == SUCCESS:
             return Response({

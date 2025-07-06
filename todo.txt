@@ -1,16 +1,28 @@
-handle the end of a game? (settle stocks owned into cash)
+handle the end of a game? (settle stocks owned into cash), summary screen, etc
 
 add interest statistics to trading day summary
  look into weird interest calculations (might be due to rounding?)
 
 nuke tutorial mode (too much work, just add an info modal explaining the mechanics)
+work on info modal
 
 implement logic for handling a buy/sell request
 handle logic for get_next_price_regular 
 
 
+Order types
 
-add wiki/instructions?
+All-or-None: an order type that must be executed in its entirety, or not executed at all.
+
+Immediate or Cancel (IOC) : a type of order that requires all or part of the order to be executed immediately. Unfilled parts of order are cancelled– sometimes referred to as Fill and Kill (FAK) orders.
+
+Good for Day (GFD) order: a type of order that will remain active until executed (in part or full) or until the end of the trading day. It is then cancelled.
+
+Good-till-cancelled (GTC): a type of order that will remain active until completed or cancelled by the entering party.
+
+Fill or Kill (FOK): an order type that must be executed immediately in its entirety, otherwise the order is cancelled; often with floor trading – market makers have a few seconds to decide to make a trade and can also do a partial order. Sometimes brokers will use this interchangeably with Fill and Kill and will fill partial FOK orders.
+
+
 
 deprecate seed field in BaseGame (use the one in GameSettings)
 
